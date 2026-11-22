@@ -1,0 +1,210 @@
+// The kitchen: make the food step by step by dragging and tapping.
+// A wrong move simply does not work: the thing glides back.
+
+import { FOODS } from '../data.js';
+import { startRecipe, tryAction, currentStep } from '../recipe.js';
+import { item, food } from '../art.js';
+import { sfx } from '../audio.js';
+import { releaseKind, canStart } from '../gesture.js';
+
+// Kitchen things that are not picked in the garden but wait in the basket tray.
+const EXTRAS = { 'orange-juice': ['ice', 'orange-slice'] };
+
+const pickArt = (list, step) => list[Math.min(step, list.length - 1)];
+
+// What is on the counter at each step. Positions are inside the 644 x 560 work area.
+// The thing marked main is the food being made (the sparkle twinkles on it).
+const SCENES = {
+  'orange-juice': s => [
+    { id: 'juicer', art: s === 1 ? 'juicer-full' : 'juicer-empty', x: 50, y: 250, w: 240, h: 207 },
+    { id: 'glass', art: pickArt(['glass-empty', 'glass-empty', 'glass-juice', 'glass-juice-ice', 'glass-juice-done'], s), x: 410, y: 222, w: 168, h: 235, main: true },
+  ],
+  pizza: s => [
+    { id: 'board', art: 'board', x: 30, y: 300, w: 290, h: 209, main: s === 0 },
+    s >= 1 && s <= 3 && { id: 'base', art: pickArt(['', 'base-plain', 'base-tomato', 'base-cheese'], s), x: 70, y: 316, w: 172, h: 172, main: true },
+    { id: 'oven', art: s >= 4 ? 'oven-on' : 'oven', x: 400, y: 196, w: 220, h: 244 },
+    s >= 4 && { id: 'pizza', art: 'pizza-whole', x: 70, y: 316, w: 172, h: 172, main: true },
+  ],
+  'mango-lassi': s => [
+    { id: 'blender', art: pickArt(['blender-empty', 'blender-empty', 'blender-mango', 'blender-milk', 'blender-empty'], s), x: 90, y: 180, w: 176, h: 277, main: s < 4 },
+    { id: 'glass', art: s >= 4 ? 'glass-lassi' : 'glass-empty', x: 410, y: 222, w: 168, h: 235, main: s >= 4 },
+  ],
+  pie: s => [
+    { id: 'board', art: 'board', x: 14, y: 330, w: 220, h: 158 },
+    s === 1 && { id: 'crust', art: 'crust-rolled', x: 40, y: 338, w: 140, h: 140 },
+    s < 4 && { id: 'dish', art: pickArt(['dish-empty', 'dish-empty', 'dish-crust', 'dish-berries'], s), x: 236, y: 296, w: 200, h: 156, main: true },
+    { id: 'oven', art: s >= 4 ? 'oven-on' : 'oven', x: 446, y: 210, w: 184, h: 204 },
+    s >= 4 && { id: 'pie', art: 'pie-whole', x: 236, y: 296, w: 200, h: 156, main: true },
+  ],
+};
+
+export function render(stage, ctx, go) {
+  const foodId = ctx.order.foodId;
+  const recipe = FOODS[foodId];
+  if (ctx.remake) {
+    // After a "yuck": make the same food again, this time with no sparkle.
+    ctx.remake = false;
+    ctx.hasSparkle = false;
+  }
+  let progress = startRecipe(foodId);
+  let sparkleInTray = ctx.hasSparkle;
+  let sparkleAdded = false;
+  let leaving = false;
+  let fresh = null; // what the last move changed, so it can bounce: { step, id, shake }
+
+  const trayable = [...recipe.ingredients.map(i => i.id), ...(EXTRAS[foodId] ?? [])];
+
+  stage.innerHTML = `<div class="k-wrap">
+<div class="k-panel card">
+  <div class="k-title"><span class="pic">${food(foodId)}</span><h1 class="baloo">${recipe.name}</h1></div>
+  <ol class="k-steps"></ol>
+  <div class="k-cost">Costs $${recipe.cost} to make</div>
+</div>
+<div class="k-right">
+  <div class="k-work card"><div class="k-counter"></div><div class="k-things"></div><div class="k-label baloo" aria-live="polite"></div></div>
+  <div class="k-tray card"><span class="k-tray-name baloo">Your basket</span><div class="k-tiles"></div><span class="k-tip"></span></div>
+</div></div>`;
+
+  const stepsEl = stage.querySelector('.k-steps');
+  const thingsEl = stage.querySelector('.k-things');
+  const tilesEl = stage.querySelector('.k-tiles');
+  const labelEl = stage.querySelector('.k-label');
+  const tipEl = stage.querySelector('.k-tip');
+
+  function draw() {
+    const step = currentStep(progress);
+    const s = progress.stepIndex;
+
+    stepsEl.innerHTML = recipe.steps.map((st, i) => {
+      const state = i < s ? 'done' : i === s ? 'now' : 'later';
+      const badge = i < s ? `<span class="pic k-num">${item('tick')}</span>` : `<span class="k-num k-circle">${i + 1}</span>`;
+      return `<li class="k-step ${state}${fresh?.step === i ? ' just' : ''}">${badge}${st.label}</li>`;
+    }).join('');
+    labelEl.textContent = step ? step.label : 'Finished!';
+
+    const things = SCENES[foodId](s).filter(Boolean);
+    const main = things.find(t => t.main) ?? things.at(-1);
+    const onCounter = new Set(things.map(t => t.id));
+    thingsEl.innerHTML = things.map(t => {
+      const isDrag = step?.drag === t.id;
+      const hint = step && (isDrag || (step.tap === t.id));
+      const target = step && step.onto === t.id;
+      const lively = `${fresh?.id === t.id ? ' bump' : ''}${fresh?.shake === t.id ? ' shake-it' : ''}${t.art === 'oven-on' ? ' cooking' : ''}`;
+      return `<div class="k-thing fill${hint ? ' hint' : ''}${target ? ' target' : ''}${lively}" data-id="${t.id}"${isDrag ? ' data-drag' : ''}
+ style="left:${t.x}px;top:${t.y}px;width:${t.w}px;height:${t.h}px">${item(t.art)}${
+  sparkleAdded && t === main ? `<span class="pic k-twinkle floaty">${item('twinkle')}</span>` : ''}</div>`;
+    }).join('');
+
+    // The basket tray holds whatever the steps still to come will need.
+    const stillNeeded = new Set(recipe.steps.slice(s).flatMap(st => [st.drag, st.tap]));
+    const tiles = trayable.filter(id => stillNeeded.has(id) && !onCounter.has(id)).map(id => {
+      const count = ctx.basket[id] ?? 1;
+      const art = id === 'mango' && s >= 1 ? 'mango-peeled' : id;
+      const hint = step && (step.drag === id || step.tap === id);
+      return `<div class="k-tile fill${hint ? ' hint' : ''}" data-id="${id}" data-drag>${item(art)}${count > 1 ? `<span class="k-count baloo">${count}</span>` : ''}</div>`;
+    });
+    if (sparkleInTray) tiles.push(`<div class="k-tile k-sparkle fill" data-id="sparkle" data-drag>${item('sparkle')}</div>`);
+    tilesEl.innerHTML = tiles.join('');
+    tipEl.textContent = sparkleInTray ? 'Add the sparkle if you dare!' : '';
+  }
+
+  function finish() {
+    if (leaving) return;
+    leaving = true;
+    ctx.hasSparkle = sparkleAdded; // a sparkle left in the basket is not in the food
+    // A short look at the finished food, then on to choosing the price.
+    setTimeout(() => go('price'), 900);
+  }
+
+  function act(action) {
+    if (leaving) return false;
+    const before = progress.stepIndex;
+    const result = tryAction(progress, action);
+    if (!result.ok) return false;
+    progress = result.progress;
+    sfx(foodId === 'orange-juice' && before === 0 ? 'squish' : 'ding');
+    const done = recipe.steps[before];
+    fresh = { step: before, id: done.onto ?? done.tap, shake: done.label === 'Blend' ? 'blender' : null };
+    if (done.label === 'Blend') fresh.id = 'glass';
+    draw();
+    fresh = null;
+    if (progress.done) finish();
+    return true;
+  }
+
+  function addSparkle() {
+    sparkleInTray = false;
+    sparkleAdded = true;
+    sfx('twinkle');
+    draw();
+    thingsEl.querySelector('.k-twinkle')?.parentElement.classList.add('bump');
+  }
+
+  // The counter thing under a point on the screen (the top one wins).
+  function thingAt(x, y, except) {
+    const all = [...thingsEl.querySelectorAll('.k-thing')].reverse();
+    return all.find(el => {
+      if (el === except) return false;
+      const r = el.getBoundingClientRect();
+      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+    });
+  }
+
+  let drag = null; // the thing being dragged right now
+
+  function glideBack(el) {
+    el.style.transition = 'transform .3s ease-out';
+    el.style.transform = '';
+    el.classList.remove('dragging');
+    setTimeout(() => { el.style.transition = ''; }, 320);
+  }
+
+  stage.addEventListener('pointerdown', e => {
+    const el = e.target.closest?.('.k-thing, .k-tile');
+    if (!el || leaving || !canStart(drag)) return;
+    e.preventDefault();
+    // A finger that is only resting on something gives way to the new touch.
+    if (drag) { glideBack(drag.el); drag = null; }
+    drag = { el, id: el.dataset.id, pointer: e.pointerId, x: e.clientX, y: e.clientY, moved: false, far: 0, canMove: 'drag' in el.dataset };
+    try { el.setPointerCapture(e.pointerId); } catch { /* the pointer has already gone */ }
+  });
+
+  stage.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pointer) return;
+    const dx = (e.clientX - drag.x) / ctx.scale, dy = (e.clientY - drag.y) / ctx.scale;
+    drag.far = Math.max(drag.far, Math.hypot(dx, dy));
+    if (drag.far > 10) drag.moved = true;
+    if (!drag.canMove || !drag.moved) return;
+    drag.el.classList.add('dragging');
+    drag.el.style.transition = '';
+    drag.el.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;
+  });
+
+  function drop(e, cancelled) {
+    if (!drag || e.pointerId !== drag.pointer) return;
+    const d = drag;
+    drag = null;
+    try { d.el.releasePointerCapture(d.pointer); } catch { /* already released */ }
+    if (cancelled) { glideBack(d.el); return; }
+    const r = d.el.getBoundingClientRect();
+    const overSelf = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    const target = d.canMove ? thingAt(e.clientX, e.clientY, d.el) : null;
+    const kind = releaseKind({ moved: d.moved, canMove: d.canMove, overSelf, hasTarget: !!target, distance: d.far });
+    if (kind === 'tap') {
+      if (!act({ tap: d.id })) glideBack(d.el);
+    } else if (kind === 'drop') {
+      if (d.id === 'sparkle') { addSparkle(); return; }
+      if (!act({ drag: d.id, onto: target.dataset.id })) glideBack(d.el);
+    } else if (kind === 'back') {
+      glideBack(d.el);
+    }
+  }
+  stage.addEventListener('pointerup', e => drop(e, false));
+  stage.addEventListener('pointercancel', e => drop(e, true));
+  // If the iPad takes the finger away without telling us, never stay stuck.
+  stage.addEventListener('lostpointercapture', e => {
+    if (drag && e.pointerId === drag.pointer) { glideBack(drag.el); drag = null; }
+  });
+
+  draw();
+}
