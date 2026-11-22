@@ -26,6 +26,7 @@ const LOOKS = {
   twinkle: { name: 'Twinkle', body: '#B79BFF', lid: '#FFC93C', cheek: '#7A4FE0', eyeY: 104, look: -1 },
   fife: { name: 'Fife', body: '#8EDB9A', lid: '#6EC6FF', cheek: '#2E9E55', eyeY: 104, look: -1 },
   ghuy: { name: 'Ghuy', body: '#FFA94D', lid: '#5ED6B0', cheek: '#E8590C', eyeY: 104, look: -1 },
+  gege: { name: 'Gege', body: '#FC6C85', lid: '#3FB56B', cheek: '#D6336C', eyeY: 104, look: 1 },
 };
 // What makes each new monster its own: Twinkle's crown, Fife's bow, Ghuy's zigzag tummy and wiggle lines.
 const EXTRAS = {
@@ -33,6 +34,9 @@ const EXTRAS = {
   fife: `<g stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"><path d="M110 176l-22-12v24zM110 176l22-12v24z" fill="#FF8FB1"/><circle cx="110" cy="176" r="6" fill="#FF5E8A"/></g>`,
   ghuy: `<path d="M62 172l12-10 12 10 12-10 12 10 12-10 12 10 12-10 12 10" fill="none" stroke="#FFE066" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><g stroke="${INK}" stroke-width="4" stroke-linecap="round" fill="none"><path d="M22 200q-8 10 0 20M198 200q8 10 0 20"/></g>`,
 };
+// Gege is a watermelon: a green rind stripe, odd socks, and a tongue that sticks out when it is not saying yuck.
+EXTRAS.gege = mood => `<path d="M56 180H164" fill="none" stroke="#3FB56B" stroke-width="9" stroke-linecap="round"/><g fill="none" stroke-width="10" stroke-linecap="round"><path d="M80 230V248" stroke="#6EC6FF"/><path d="M110 230V248" stroke="#FFE066"/><path d="M140 230V248" stroke="#B79BFF"/></g>${mood === 'yuck' || mood === 'shocked' ? '' : `<path d="M102 134h16v10a8 8 0 0 1-16 0z" fill="#FF8FB1" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>`}`;
+const SEEDS = `<g fill="${INK}"><ellipse cx="68" cy="152" rx="4" ry="6"/><ellipse cx="90" cy="164" rx="4" ry="6"/><ellipse cx="130" cy="164" rx="4" ry="6"/><ellipse cx="152" cy="152" rx="4" ry="6"/><ellipse cx="110" cy="158" rx="4" ry="6"/></g>`;
 const LEGS = 'M80 200V250M80 250l-10 12M80 250v14M80 250l10 12M110 200V250M110 250l-10 12M110 250v14M110 250l10 12M140 200V250M140 250l-10 12M140 250v14M140 250l10 12';
 const TOP_HAND = 'M110 70V28M110 28L98 12M110 28V8M110 28l12-16';
 const BODY = 'M50 120C50 44 170 44 170 120V190C170 216 140 216 135 196C130 180 90 180 85 196C80 216 50 216 50 190Z';
@@ -93,7 +97,7 @@ export function monster(id, mood = 'idle', look) {
   const quiet = mood === 'shocked' || mood === 'yuck';
   const marks = id === 'ella'
     ? `${quiet ? '' : '<ellipse cx="110" cy="156" rx="32" ry="20" fill="#FFD0DF"/>'}<g fill="${mood === 'yuck' ? '#8CBF5A' : '#F2608C'}"><circle cx="64" cy="170" r="6"/><circle cx="156" cy="176" r="7"/><circle cx="150" cy="84" r="5"/><circle cx="68" cy="90" r="4"/></g>`
-    : `<g fill="#FFE066"><path d="M62 84l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M156 160l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M152 80l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/><path d="M64 176l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/></g>`;
+    : id === 'gege' ? (quiet ? '' : SEEDS) : `<g fill="#FFE066"><path d="M62 84l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M156 160l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M152 80l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/><path d="M64 176l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/></g>`;
   const dots = list => list.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5"/>`).join('');
   const tips = dots([...OTHER_TIPS, ...arms.tips]);
   const tagY = quiet ? 164 : 146;
@@ -103,7 +107,7 @@ export function monster(id, mood = 'idle', look) {
   return svg('0 0 220 280', `${L.name}, a monster with three legs and three hands, ${MOOD_WORDS[mood] ?? MOOD_WORDS.idle}`,
     `<g class="m-breathe"><g class="m-wave"><path d="${TOP_HAND}" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><g class="m-glow" fill="#FFE066" stroke="${INK}" stroke-width="2.5">${dots(TOP_TIPS)}</g></g>
 <g stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="${LEGS}"/><path d="${arms.d}"/><path fill="${bodyColour}" d="${BODY}"/></g>
-${marks}<g class="m-glow" fill="#FFE066" stroke="${INK}" stroke-width="2.5">${tips}</g>${face(id, mood, L)}${tag}${EXTRAS[id] ?? ''}</g>`);
+${marks}<g class="m-glow" fill="#FFE066" stroke="${INK}" stroke-width="2.5">${tips}</g>${face(id, mood, L)}${tag}${typeof EXTRAS[id] === 'function' ? EXTRAS[id](mood) : EXTRAS[id] ?? ''}</g>`);
 }
 
 /* ---------- Victoria the waiter and the chef ---------- */
@@ -174,6 +178,12 @@ const FOOD_ART = {
   pizza: ['Pizza', `${G3}<path d="M8 16Q32 4 56 16L32 60Z" fill="#FFD166"/><path d="M8 16Q32 4 56 16" fill="none" stroke="#C97B2A" stroke-width="7"/><path d="M8 16Q32 4 56 16L32 60Z" fill="none"/><circle cx="26" cy="26" r="5" fill="#EF476F"/><circle cx="39" cy="30" r="5" fill="#EF476F"/><circle cx="32" cy="43" r="4" fill="#EF476F"/></g>`],
   'mango-lassi': ['Mango lassi', `${G3}<path d="M18 16H46L42 58H22Z" fill="#FFC857"/><path d="M18 16H46L45 26Q32 32 19 26Z" fill="#fff"/><path d="M38 20L46 4" fill="none"/><path d="M24 10Q30 2 36 10Q30 14 24 10Z" fill="#5ED6B0"/></g>`],
   pie: ['Pie', `${G3}<path d="M6 40L40 14Q58 20 58 40Z" fill="#F2B56B"/><path d="M6 40H58V48H6Z" fill="#C97B2A"/><path d="M40 14Q58 20 58 40" fill="none" stroke="#C97B2A" stroke-width="6"/><path d="M40 14Q58 20 58 40" fill="none"/><path d="M28 34l4-4M38 36l4-4M34 26l4-4" fill="none" stroke="#EF476F" stroke-width="3"/></g>`],
+  tea: ['Tea', `${G3}<ellipse cx="30" cy="54" rx="24" ry="5" fill="#E4DBFF"/><path d="M10 28H46Q46 50 28 50Q10 50 10 28Z" fill="#fff"/><path d="M46 32h5a5 5 0 0 1 0 11h-7" fill="none"/><ellipse cx="28" cy="28" rx="18" ry="5" fill="#B5D96A"/><path d="M22 18q-4-5 0-9M32 18q-4-5 0-9" fill="none" stroke="#8A7AA3"/></g>`],
+  spaghetti: ['Spaghetti', `${G3}<ellipse cx="32" cy="44" rx="28" ry="12" fill="#fff"/><path d="M12 40Q12 20 32 20Q52 20 52 40Q32 50 12 40Z" fill="#FFD166"/><path d="M18 36Q25 28 32 36T46 34" fill="none" stroke="#E0A62A" stroke-width="2.5"/><path d="M22 26Q32 10 42 26Q32 32 22 26Z" fill="#EF476F"/></g>`],
+  coffee: ['Coffee', `${G3}<path d="M12 24H44V46a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10Z" fill="#6EC6FF"/><path d="M44 30h6a7 7 0 0 1 0 14h-6" fill="none"/><ellipse cx="28" cy="24" rx="16" ry="5" fill="#8A5A32"/><path d="M22 14q-4-5 0-9M32 14q-4-5 0-9" fill="none" stroke="#8A7AA3"/></g>`],
+  boba: ['Boba', `${G3}<path d="M16 18H48L43 58H21Z" fill="#E8C9A0"/><g fill="${INK}" stroke-width="0"><circle cx="26" cy="51" r="4"/><circle cx="35" cy="52" r="4"/><circle cx="30" cy="44" r="4"/><circle cx="39" cy="45" r="4"/></g><path d="M16 18H48L43 58H21Z" fill="none"/><path d="M36 24L42 3" fill="none" stroke-width="9"/><path d="M36 24L42 3" fill="none" stroke="#FF5E8A" stroke-width="4"/></g>`],
+  cupcake: ['Cupcake', `${G3}<path d="M12 28Q8 18 20 16Q20 6 32 8Q44 4 46 16Q58 18 52 28Z" fill="#fff"/><path d="M14 28H50L45 58H19Z" fill="#FF8FB1"/><path d="M24 30l2 26M32 30v26M40 30l-2 26" fill="none" stroke-width="2"/><circle cx="32" cy="8" r="5" fill="#EF476F"/><g stroke-width="0"><circle cx="22" cy="21" r="2" fill="#6EC6FF"/><circle cx="40" cy="19" r="2" fill="#FFC93C"/><circle cx="30" cy="18" r="2" fill="#5ED6B0"/></g></g>`],
+  salmon: ['Salmon', `${G3}<ellipse cx="32" cy="40" rx="29" ry="17" fill="#fff"/><path d="M10 40Q22 24 40 28Q52 32 50 42Q36 54 10 40Z" fill="#FF8A73"/><path d="M24 35l4 10M32 33l4 12M40 33l3 10" fill="none" stroke="#FFD0C4" stroke-width="2.5"/><circle cx="50" cy="27" r="8" fill="#FFE066"/></g>`],
 };
 
 export function food(id) {
@@ -201,8 +211,79 @@ const CHUNKS = `<g fill="#FFB627" stroke-width="3"><circle cx="56" cy="150" r="1
 const DISH = `<path d="M10 34H170L150 100H30Z" fill="#B9A4F5"/><ellipse cx="90" cy="34" rx="82" ry="20" fill="#E4DBFF"/>`;
 const PIE_BERRIES = `<g fill="#D6336C" stroke-width="3"><circle cx="60" cy="32" r="10"/><circle cx="84" cy="38" r="10"/><circle cx="108" cy="30" r="10"/><circle cx="126" cy="38" r="9"/><circle cx="44" cy="38" r="8"/></g>`;
 
+/* The five later foods: tea, spaghetti, coffee, boba, salmon */
+const STEAM = (x, y) => `<path d="M${x} ${y}q-10-12 0-24M${x + 28} ${y}q-10-12 0-24" fill="none" stroke="#8A7AA3" stroke-width="5"/>`;
+const pot = full => `${G5}<path d="M30 70H210V160a24 24 0 0 1-24 24H54a24 24 0 0 1-24-24Z" fill="#B9A4F5"/><path d="M30 96H6M210 96h24" fill="none" stroke-width="12"/><ellipse cx="120" cy="70" rx="90" ry="20" fill="${full ? '#FFD166' : '#DFF4FB'}"/>${full ? `<path d="M60 70Q80 58 100 70T140 70T180 70" fill="none" stroke="#E0A62A" stroke-width="4"/>${STEAM(104, 40)}` : ''}</g>`;
+const PLATE = `<ellipse cx="120" cy="112" rx="112" ry="48" fill="#fff"/><ellipse cx="120" cy="108" rx="78" ry="28" fill="#F1ECF9" stroke-width="3"/>`;
+const PASTA_PILE = `<path d="M56 106Q56 50 120 50Q184 50 184 106Q120 134 56 106Z" fill="#FFD166" stroke-width="4"/><path d="M74 100Q90 78 106 100T138 100T170 96M84 82Q100 64 116 82T150 80" fill="none" stroke="#E0A62A" stroke-width="4"/>`;
+const SAUCE = `<path d="M84 76Q120 34 156 76Q152 96 120 96Q88 96 84 76Z" fill="#EF476F" stroke-width="4"/>`;
+const CHEESE_BITS = `<g fill="#FFF1A8" stroke-width="2.5"><circle cx="104" cy="66" r="7"/><circle cx="124" cy="58" r="7"/><circle cx="138" cy="74" r="7"/><circle cx="116" cy="80" r="6"/></g>`;
+const fillet = colour => `<path d="M40 106Q84 56 152 70Q198 80 202 106Q150 138 40 106Z" fill="${colour}" stroke-width="4"/><path d="M84 88l10 30M112 80l10 40M140 80l8 34M166 86l6 24" fill="none" stroke="#FFD0C4" stroke-width="4"/>`;
+const LEMON_SLICE = `<g stroke-width="3"><circle cx="186" cy="74" r="24" fill="#FFE066"/><circle cx="186" cy="74" r="16" fill="#FFF6B8"/><path d="M186 58V90M170 74H202" fill="none" stroke-width="2.5"/></g>`;
+const plate = on => `${G5}${PLATE}${on}</g>`;
+const teapot = state => `${G5}<path d="M190 124Q226 112 238 76" fill="none" stroke-width="16"/><path d="M52 100Q12 100 16 136Q20 166 54 160" fill="none" stroke-width="10"/><path d="M50 112Q50 62 120 62Q190 62 190 112V150Q190 196 120 196Q50 196 50 150Z" fill="#FF8FB1"/><path d="M76 64Q120 32 164 64Z" fill="#FF5E8A"/><circle cx="120" cy="40" r="11" fill="#FFC93C" stroke-width="4"/><circle cx="120" cy="130" r="36" fill="${state === 'full' ? '#B5D96A' : '#fff'}" stroke-width="4"/>${state === 'leaves' ? '<g fill="#5FBF5A" stroke-width="3"><path d="M100 144Q98 118 122 112Q126 138 100 144Z"/><path d="M122 150Q124 128 146 126Q146 148 122 150Z"/></g>' : ''}${state === 'full' ? STEAM(214, 62) : ''}</g>`;
+const teacup = full => `${G5}<ellipse cx="96" cy="146" rx="84" ry="10" fill="#E4DBFF"/><path d="M150 58h14a18 18 0 0 1 0 38h-20" fill="none" stroke-width="8"/><path d="M26 42H150Q150 134 88 134Q26 134 26 42Z" fill="#fff"/><ellipse cx="88" cy="42" rx="62" ry="14" fill="${full ? '#B5D96A' : '#F1ECF9'}"/>${full ? STEAM(74, 22) : ''}</g>`;
+const grinder = state => `${G5}<path d="M30 20H160L130 100H60Z" fill="#fff" fill-opacity=".85"/>${state === 'beans' ? '<g fill="#8A5A32" stroke-width="3"><ellipse cx="80" cy="76" rx="12" ry="16"/><ellipse cx="108" cy="80" rx="12" ry="16"/><ellipse cx="94" cy="54" rx="12" ry="16"/></g><path d="M30 20H160L130 100H60Z" fill="none"/>' : ''}<rect x="40" y="100" width="110" height="136" rx="14" fill="#C97B2A"/><rect x="60" y="170" width="70" height="44" rx="6" fill="${state === 'ground' ? '#5A3A28' : '#F2B56B'}" stroke-width="4"/><circle cx="95" cy="192" r="6" fill="#FFC93C" stroke-width="3"/><path d="M150 132h26v-30" fill="none" stroke-width="8"/><circle cx="176" cy="96" r="11" fill="#FF5E8A" stroke-width="4"/></g>`;
+const mug = inside => `${G5}<path d="M150 64h16a22 22 0 0 1 0 52h-16" fill="none" stroke-width="9"/><path d="M30 42H150V140a26 26 0 0 1-26 26H56a26 26 0 0 1-26-26Z" fill="#6EC6FF"/><ellipse cx="90" cy="42" rx="60" ry="14" fill="${{ empty: '#DFF4FB', coffee: '#5A3A28', latte: '#C99A6B' }[inside]}"/>${inside === 'latte' ? '<path d="M90 50l-12-9a7 6 0 0 1 12-4a7 6 0 0 1 12 4z" fill="#fff" stroke-width="0"/>' : ''}${inside === 'empty' ? '' : STEAM(76, 22)}</g>`;
+const pan = state => `${G5}<path d="M200 88H282" fill="none" stroke-width="18"/><path d="M200 88H282" fill="none" stroke="#C97B2A" stroke-width="9"/><path d="M20 72H200V112a30 30 0 0 1-30 30H50a30 30 0 0 1-30-30Z" fill="#5A4470"/><ellipse cx="110" cy="72" rx="90" ry="24" fill="#8B79A8"/>${state ? `<path d="M46 72Q80 44 128 54Q168 60 172 74Q128 96 46 72Z" fill="${state === 'cooked' ? '#FF8A73' : '#FFC2B5'}" stroke-width="4"/>` : ''}${state === 'cooked' ? `<path d="M84 60l6 22M110 56l6 28M136 58l4 22" fill="none" stroke="#C4553F" stroke-width="4"/>${STEAM(96, 36)}` : ''}</g>`;
+const BCUP = 'M20 40H170L146 266H44Z';
+const PEARLS = `<g fill="${INK}" stroke-width="0"><circle cx="66" cy="246" r="13"/><circle cx="96" cy="250" r="13"/><circle cx="126" cy="246" r="13"/><circle cx="80" cy="222" r="13"/><circle cx="112" cy="224" r="13"/><circle cx="96" cy="200" r="13"/></g>`;
+const bobaCup = stage => `${G5}<path d="${BCUP}" fill="#fff" fill-opacity=".85"/>${stage >= 2 ? '<path d="M27.6 110H162.4L146 266H44Z" fill="#E8C9A0" stroke-width="0"/>' : ''}${stage >= 1 ? PEARLS : ''}${stage >= 3 ? '<g fill="#DFF4FB" stroke-width="3"><rect x="52" y="118" width="34" height="34" rx="7"/><rect x="96" y="128" width="34" height="34" rx="7" transform="rotate(12 113 145)"/></g>' : ''}<path d="${BCUP}" fill="none"/>${stage >= 4 ? '<path d="M104 236L132 4" fill="none" stroke-width="20"/><path d="M104 236L132 4" fill="none" stroke="#FF5E8A" stroke-width="11"/>' : ''}</g>`;
+
+/* Cupcake */
+const CASE = `<path d="M30 76H140L124 158H46Z" fill="#FF8FB1"/><path d="M58 78l6 78M85 78v78M112 78l-6 78" fill="none" stroke-width="3"/>`;
+const DOME = `<path d="M24 78Q28 34 85 34Q142 34 146 78Z" fill="#F2B56B"/>`;
+const SWIRL = `<path d="M22 78Q14 54 42 50Q38 28 66 30Q74 8 96 18Q118 12 118 34Q142 36 132 54Q156 62 148 78Z" fill="#fff"/><path d="M44 54Q70 44 96 52M68 32Q88 26 106 34" fill="none" stroke="#E4DBFF" stroke-width="3"/>`;
+const SPRINKLED = `<g stroke-width="0"><rect x="48" y="58" width="12" height="5" rx="2" fill="#6EC6FF" transform="rotate(20 54 60)"/><rect x="78" y="40" width="12" height="5" rx="2" fill="#FFC93C" transform="rotate(-30 84 42)"/><rect x="104" y="56" width="12" height="5" rx="2" fill="#5ED6B0" transform="rotate(40 110 58)"/><rect x="72" y="62" width="12" height="5" rx="2" fill="#FF5E8A" transform="rotate(-10 78 64)"/><rect x="118" y="66" width="12" height="5" rx="2" fill="#B79BFF"/><rect x="34" y="68" width="12" height="5" rx="2" fill="#FFC93C" transform="rotate(-25 40 70)"/></g><circle cx="88" cy="16" r="11" fill="#EF476F" stroke-width="4"/>`;
+const cupcake = top => `${G5}${top}${CASE}</g>`;
+// One wobbly soap bubble for the bubble machine.
+const bubble = (x, y, r, delay) => `<g class="d-bob" style="animation-delay:${delay}s"><circle cx="${x}" cy="${y}" r="${r}" fill="#DFF4FB" fill-opacity=".7" stroke="${INK}" stroke-width="3"/><path d="M${x - r * 0.45} ${y - r * 0.1}a${r * 0.5} ${r * 0.5} 0 0 1 ${r * 0.4}-${r * 0.45}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>`;
+
 // [viewBox, label, drawing]
 const ITEM_ART = {
+  flour: ['0 0 64 64', 'Bag of flour', `${G3}<path d="M16 18Q12 40 14 58H50Q52 40 48 18Z" fill="#FFF6E0"/><path d="M16 18Q32 6 48 18Q32 24 16 18Z" fill="#F2D9A0"/><path d="M24 40h16M32 32v16" fill="none" stroke="#E0A62A" stroke-width="4"/></g>`],
+  sprinkles: ['0 0 64 64', 'Sprinkles', `<g stroke="${INK}" stroke-width="2.5"><rect x="8" y="14" width="22" height="9" rx="4" fill="#6EC6FF" transform="rotate(25 19 18)"/><rect x="34" y="10" width="22" height="9" rx="4" fill="#FFC93C" transform="rotate(-20 45 14)"/><rect x="18" y="32" width="22" height="9" rx="4" fill="#FF5E8A" transform="rotate(-35 29 36)"/><rect x="36" y="38" width="22" height="9" rx="4" fill="#5ED6B0" transform="rotate(15 47 42)"/><rect x="10" y="48" width="22" height="9" rx="4" fill="#B79BFF" transform="rotate(10 21 52)"/></g>`],
+  frosting: ['0 0 64 64', 'Frosting', `${G3}<path d="M10 12L54 20L26 52Z" fill="#fff"/><path d="M26 52l-6 8" fill="none" stroke-width="6"/><path d="M26 52l-6 8" fill="none" stroke="#FF8FB1" stroke-width="3"/><path d="M10 12L54 20" fill="none" stroke="#FF8FB1" stroke-width="6"/><path d="M10 12L54 20" fill="none"/></g>`],
+  'case-empty': ['0 0 170 170', 'Cupcake case', cupcake('')],
+  'case-batter': ['0 0 170 170', 'Cupcake case full of batter', cupcake('<ellipse cx="85" cy="76" rx="55" ry="12" fill="#FFE9A8" stroke-width="4"/>')],
+  'cupcake-plain': ['0 0 170 170', 'A baked cupcake', cupcake(DOME)],
+  'cupcake-frosted': ['0 0 170 170', 'Cupcake with frosting', cupcake(SWIRL)],
+  'cupcake-done': ['0 0 170 170', 'Cupcake with frosting, sprinkles and a cherry', cupcake(SWIRL + SPRINKLED)],
+  'tea-leaf': ['0 0 64 64', 'Tea leaf', `${G3}<path d="M10 54Q8 20 52 10Q56 50 10 54Z" fill="#5FBF5A"/><path d="M14 50Q28 34 46 16" fill="none" stroke="#2E9E55"/></g>`],
+  pasta: ['0 0 64 64', 'Pasta', `${G3}<path d="M8 40Q8 20 32 20Q56 20 56 40Q56 54 32 54Q8 54 8 40Z" fill="#FFD166"/><path d="M16 38Q24 26 32 38T48 38M20 47Q28 38 36 47T46 45" fill="none" stroke="#E0A62A"/></g>`],
+  bean: ['0 0 64 64', 'Coffee bean', `${G3}<ellipse cx="32" cy="32" rx="18" ry="25" fill="#8A5A32" transform="rotate(20 32 32)"/><path d="M40 10Q24 30 26 54" fill="none" stroke="#5A3A28"/></g>`],
+  boba: ['0 0 64 64', 'Boba pearls', `${G3}<g fill="#5A3A28"><circle cx="21" cy="42" r="13"/><circle cx="43" cy="42" r="13"/><circle cx="32" cy="22" r="13"/></g><g fill="#fff" stroke-width="0"><circle cx="17" cy="38" r="3"/><circle cx="39" cy="38" r="3"/><circle cx="28" cy="18" r="3"/></g></g>`],
+  fish: ['0 0 64 64', 'Fish', `${G3}<path d="M6 32Q26 10 46 30Q54 22 60 20Q57 32 60 46Q54 42 46 36Q26 54 6 32Z" fill="#FF8A73"/><path d="M30 24Q35 32 30 40" fill="none" stroke-width="2"/></g><circle cx="18" cy="29" r="3" fill="${INK}"/><path d="M12 36q5 3 9 0" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`],
+  lemon: ['0 0 64 64', 'Lemon', `${G3}<path d="M6 34Q12 12 32 14Q50 14 58 32Q52 52 32 52Q14 52 6 34Z" fill="#FFE066"/><path d="M44 14Q50 4 58 8Q56 18 44 14Z" fill="#3FB56B"/><path d="M18 30Q22 22 30 22" fill="none" stroke="#FFF6B8"/></g>`],
+  kettle: ['0 0 64 64', 'Kettle of hot water', `${G3}<path d="M48 34L60 24" fill="none" stroke-width="6"/><path d="M20 20Q32 2 44 20" fill="none"/><path d="M12 56V32Q12 18 32 18Q52 18 52 32V56Z" fill="#6EC6FF"/><path d="M12 44H52" fill="none" stroke="#fff"/></g>`],
+  straw: ['0 0 64 64', 'Straw', `<g stroke-linecap="round"><path d="M22 58L42 6" fill="none" stroke="${INK}" stroke-width="13"/><path d="M22 58L42 6" fill="none" stroke="#FF5E8A" stroke-width="7"/></g>`],
+  pot: ['0 0 240 200', 'Pot of water', pot(false)],
+  'pot-pasta': ['0 0 240 200', 'Pot of cooked pasta', pot(true)],
+  'plate-empty': ['0 0 240 170', 'Empty plate', plate('')],
+  'plate-pasta': ['0 0 240 170', 'Plate of pasta', plate(PASTA_PILE)],
+  'plate-sauce': ['0 0 240 170', 'Pasta with tomato sauce', plate(PASTA_PILE + SAUCE)],
+  'plate-spaghetti': ['0 0 240 170', 'Spaghetti with tomato sauce and cheese', plate(PASTA_PILE + SAUCE + CHEESE_BITS)],
+  'plate-fish': ['0 0 240 170', 'Cooked salmon on a plate', plate(fillet('#FF8A73'))],
+  'plate-salmon': ['0 0 240 170', 'Salmon with lemon', plate(fillet('#FF8A73') + LEMON_SLICE)],
+  teapot: ['0 0 250 217', 'Teapot', teapot('empty')],
+  'teapot-leaves': ['0 0 250 217', 'Teapot with tea leaves', teapot('leaves')],
+  'teapot-full': ['0 0 250 217', 'Teapot full of hot tea', teapot('full')],
+  'cup-empty': ['0 0 200 160', 'Empty teacup', teacup(false)],
+  'cup-tea': ['0 0 200 160', 'Cup of tea', teacup(true)],
+  grinder: ['0 0 200 257', 'Coffee grinder', grinder('empty')],
+  'grinder-beans': ['0 0 200 257', 'Coffee grinder with beans', grinder('beans')],
+  'grinder-ground': ['0 0 200 257', 'Coffee grinder with ground coffee', grinder('ground')],
+  'mug-empty': ['0 0 200 180', 'Empty mug', mug('empty')],
+  'mug-coffee': ['0 0 200 180', 'Mug of coffee', mug('coffee')],
+  'mug-latte': ['0 0 200 180', 'Coffee with milk', mug('latte')],
+  pan: ['0 0 300 170', 'Frying pan', pan('')],
+  'pan-fish': ['0 0 300 170', 'Fish in the pan', pan('raw')],
+  'pan-cooked': ['0 0 300 170', 'Cooked fish in the pan', pan('cooked')],
+  'bcup-0': ['0 0 190 277', 'Empty cup', bobaCup(0)],
+  'bcup-1': ['0 0 190 277', 'Cup with boba pearls', bobaCup(1)],
+  'bcup-2': ['0 0 190 277', 'Boba pearls and milk', bobaCup(2)],
+  'bcup-3': ['0 0 190 277', 'Boba with ice', bobaCup(3)],
+  'bcup-4': ['0 0 190 277', 'Boba with ice and a straw', bobaCup(4)],
   orange: ['0 0 64 64', 'Orange', `${G3}<circle cx="32" cy="36" r="22" fill="#FF9F1C"/><path d="M32 14Q40 2 50 8Q44 18 32 14Z" fill="#3FB56B"/><path d="M20 30Q22 22 30 20" fill="none" stroke="#FFD08A"/></g>`],
   dough: ['0 0 64 64', 'Dough', `${G3}<path d="M10 40Q6 22 24 20Q34 8 46 20Q60 24 56 42Q52 56 32 56Q12 56 10 40Z" fill="#F6E3B4"/><path d="M22 32Q26 26 32 28M38 44Q44 44 46 38" fill="none" stroke="#D9BF85"/></g>`],
   tomato: ['0 0 64 64', 'Tomato', `${G3}<circle cx="32" cy="38" r="21" fill="#EF476F"/><path d="M20 18Q32 26 44 18Q38 14 32 6Q26 14 20 18Z" fill="#3FB56B"/></g>`],
@@ -276,6 +357,7 @@ const DECOR_ART = {
   balloons: ['-4 0 130 196', 'A bunch of balloons', `${G4}<path d="M40 190Q44 130 30 96M40 190Q40 120 60 70M40 190Q50 140 88 104" fill="none" stroke-width="3"/><g class="d-bob"><ellipse cx="26" cy="62" rx="26" ry="32" fill="#FF5E8A"/><ellipse cx="64" cy="38" rx="26" ry="32" fill="#FFC93C"/><ellipse cx="96" cy="74" rx="26" ry="32" fill="#6EC6FF"/></g></g>`],
   disco: ['-12 0 124 134', 'A disco ball', `${G4}<path d="M50 0V34"/><g class="d-spin"><circle cx="50" cy="74" r="40" fill="#DDE6FF"/><rect x="18" y="64" width="14" height="20" fill="#FF8FB1" stroke-width="0"/><rect x="52" y="40" width="12" height="20" fill="#8FD3FF" stroke-width="0"/><rect x="68" y="88" width="14" height="18" fill="#B79BFF" stroke-width="0"/><path d="M12 62H88M12 86H88M34 37V111M66 37V111M50 34V114" stroke-width="2.5" fill="none"/><circle cx="50" cy="74" r="40" fill="none"/></g><g class="d-twinkle" fill="#FFE066" stroke-width="2.5"><path d="M4 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path d="M98 110l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/></g></g>`],
   lights: ['-6 -6 130 80', 'Fairy lights and flowers', `<path d="M0 8Q30 30 60 12T118 8" fill="none" stroke="${INK}" stroke-width="3"/>${bulbs([[4, 10], [30, 20], [60, 13], [90, 6], [116, 9]])}${vase(38, 12)}`],
+  bubbles: ['0 0 110 170', 'A bubble machine', `${G4}${bubble(30, 70, 13, 0)}${bubble(74, 46, 17, 0.8)}${bubble(52, 18, 10, 1.6)}${bubble(90, 86, 8, 0.4)}<path d="M38 104h34l-6 16H44z" fill="#FFC93C"/><rect x="14" y="118" width="82" height="46" rx="12" fill="#6EC6FF"/><circle cx="38" cy="141" r="9" fill="#FF5E8A" stroke-width="3"/><path d="M58 134h26M58 148h26" fill="none" stroke="#fff" stroke-width="4"/></g>`],
 };
 export function decor(id) {
   const [viewBox, label, body] = DECOR_ART[id];

@@ -64,6 +64,7 @@ const DECOR_BOX = {
   balloons: { w: 116, h: 176, spots: [[908, 376], [0, 452], [644, 318]] },
   disco: { w: 110, h: 230, spots: [[640, 124], [300, 124], [880, 124]] },
   lights: { w: 300, h: 72, spots: [[362, 184], [50, 430]] },
+  bubbles: { w: 104, h: 160, spots: [[0, 320], [650, 330]] },
 };
 
 function decorButtons(game) {

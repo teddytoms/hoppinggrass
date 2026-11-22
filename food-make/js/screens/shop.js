@@ -49,6 +49,14 @@ ${has ? '' : star(id, goal)}<div class="s-pics"><span class="pic s-thing">${deco
 <h2 class="baloo">${d.name}</h2><div class="s-brings">${has ? `${who} comes to eat now!` : 'Brings a new monster!'}</div>${bottom}</div>`;
   }
 
+  // The shelf has room for four recipe cards: the one just before the next
+  // recipe to buy, the next one, and what comes after.
+  const shelf = next => {
+    const last = FOOD_ORDER.length - 4;
+    const from = next ? Math.max(0, Math.min(FOOD_ORDER.indexOf(next) - 1, last)) : last;
+    return FOOD_ORDER.slice(from, from + 4);
+  };
+
   function draw() {
     const game = ctx.game, next = nextRecipe(game), goal = goalOf(game);
     let news = '';
@@ -61,8 +69,8 @@ ${has ? '' : star(id, goal)}<div class="s-pics"><span class="pic s-thing">${deco
     }
     stage.innerHTML = `<div class="s-wrap">
 <div class="s-top"><button class="btn white" data-back>Back</button><h1 class="baloo">Shop</h1>${piggyBank(game)}</div>
-<h2 class="s-shelf baloo">Recipes</h2>
-<div class="s-cards">${FOOD_ORDER.map(id => recipeCard(id, next, goal)).join('')}</div>
+<h2 class="s-shelf baloo">Recipes <small>${game.owned.length} of ${FOOD_ORDER.length}</small></h2>
+<div class="s-cards">${shelf(next).map(id => recipeCard(id, next, goal)).join('')}</div>
 <h2 class="s-shelf baloo">Decorations</h2>
 <div class="s-cards three">${DECOR_ORDER.map(id => decorCard(id, goal)).join('')}</div>
 ${news}

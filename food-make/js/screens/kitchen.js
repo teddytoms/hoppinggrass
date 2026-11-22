@@ -8,7 +8,9 @@ import { sfx } from '../audio.js';
 import { releaseKind, canStart } from '../gesture.js';
 
 // Kitchen things that are not picked in the garden but wait in the basket tray.
-const EXTRAS = { 'orange-juice': ['ice', 'orange-slice'] };
+const EXTRAS = { 'orange-juice': ['ice', 'orange-slice'], tea: ['kettle'], boba: ['ice', 'straw'], cupcake: ['frosting'] };
+// Tapping these makes the thing shake (a blender, a grinder, a sizzling pan).
+const SHAKES = { Blend: 'blender', Grind: 'grinder', Cook: 'pan' };
 
 const pickArt = (list, step) => list[Math.min(step, list.length - 1)];
 
@@ -35,6 +37,30 @@ const SCENES = {
     s < 4 && { id: 'dish', art: pickArt(['dish-empty', 'dish-empty', 'dish-crust', 'dish-berries'], s), x: 236, y: 296, w: 200, h: 156, main: true },
     { id: 'oven', art: s >= 4 ? 'oven-on' : 'oven', x: 446, y: 210, w: 184, h: 204 },
     s >= 4 && { id: 'pie', art: 'pie-whole', x: 236, y: 296, w: 200, h: 156, main: true },
+  ],
+  tea: s => [
+    { id: 'teapot', art: pickArt(['teapot', 'teapot-leaves', 'teapot-full', 'teapot'], s), x: 40, y: 232, w: 260, h: 226, main: s < 3 },
+    { id: 'cup', art: s >= 3 ? 'cup-tea' : 'cup-empty', x: 400, y: 290, w: 210, h: 168, main: s >= 3 },
+  ],
+  spaghetti: s => [
+    { id: 'pot', art: s === 1 ? 'pot-pasta' : 'pot', x: 30, y: 250, w: 250, h: 208 },
+    { id: 'plate', art: pickArt(['plate-empty', 'plate-empty', 'plate-pasta', 'plate-sauce', 'plate-spaghetti'], s), x: 350, y: 292, w: 260, h: 184, main: true },
+  ],
+  coffee: s => [
+    { id: 'grinder', art: pickArt(['grinder', 'grinder-beans', 'grinder-ground', 'grinder'], s), x: 70, y: 200, w: 200, h: 257 },
+    { id: 'mug', art: pickArt(['mug-empty', 'mug-empty', 'mug-empty', 'mug-coffee', 'mug-latte'], s), x: 400, y: 270, w: 210, h: 189, main: true },
+  ],
+  boba: s => [
+    { id: 'cup', art: `bcup-${Math.min(s, 4)}`, x: 222, y: 170, w: 200, h: 292, main: true },
+  ],
+  cupcake: s => [
+    s < 2 && { id: 'case', art: s === 1 ? 'case-batter' : 'case-empty', x: 90, y: 284, w: 180, h: 180, main: true },
+    { id: 'oven', art: s >= 2 ? 'oven-on' : 'oven', x: 400, y: 196, w: 220, h: 244 },
+    s >= 2 && { id: 'cupcake', art: pickArt(['cupcake-plain', 'cupcake-frosted', 'cupcake-done'], s - 2), x: 90, y: 284, w: 180, h: 180, main: true },
+  ],
+  salmon: s => [
+    { id: 'pan', art: pickArt(['pan', 'pan-fish', 'pan-cooked', 'pan'], s), x: 20, y: 296, w: 300, h: 170 },
+    { id: 'plate', art: pickArt(['plate-empty', 'plate-empty', 'plate-empty', 'plate-fish', 'plate-salmon'], s), x: 350, y: 292, w: 260, h: 184, main: true },
   ],
 };
 
@@ -124,7 +150,7 @@ export function render(stage, ctx, go) {
     progress = result.progress;
     sfx(foodId === 'orange-juice' && before === 0 ? 'squish' : 'ding');
     const done = recipe.steps[before];
-    fresh = { step: before, id: done.onto ?? done.tap, shake: done.label === 'Blend' ? 'blender' : null };
+    fresh = { step: before, id: done.onto ?? done.tap, shake: SHAKES[done.label] ?? null };
     if (done.label === 'Blend') fresh.id = 'glass';
     draw();
     fresh = null;

@@ -18,18 +18,19 @@ export const KIND_SHARE = 2 / 3;
 // The kinds of day. `pic` is the picture on the sign and in the window.
 export const DAYS = {
   ordinary: { name: '', foods: [], pic: 'sun' },
-  hot: { name: 'Hot day', foods: ['orange-juice', 'mango-lassi'], pic: 'sun' },
-  rainy: { name: 'Rainy day', foods: ['pizza'], pic: 'rain' },
-  party: { name: 'Party day', foods: ['pie'], pic: 'party' },
+  hot: { name: 'Hot day', foods: ['orange-juice', 'mango-lassi', 'boba'], pic: 'sun' },
+  rainy: { name: 'Rainy day', foods: ['pizza', 'spaghetti', 'tea'], pic: 'rain' },
+  party: { name: 'Party day', foods: ['pie', 'cupcake', 'salmon'], pic: 'party' },
 };
 
 // Decorations, cheapest first. Each brings one new monster to the restaurant.
 // `spots` is how many places it can hang; tapping it moves it to the next.
-export const DECOR_ORDER = ['balloons', 'lights', 'disco'];
+export const DECOR_ORDER = ['balloons', 'lights', 'disco', 'bubbles'];
 export const DECOR = {
   balloons: { name: 'Balloons', price: 20, brings: 'fife', spots: 3 },
   lights: { name: 'Fairy lights and flowers', price: 50, brings: 'twinkle', spots: 2 },
   disco: { name: 'Disco ball', price: 80, brings: 'ghuy', spots: 3 },
+  bubbles: { name: 'Bubble machine', price: 100, brings: 'gege', spots: 2 },
 };
 
 // The sticker book, in page order. The rules for winning them are in stickers.js.
@@ -53,7 +54,7 @@ export const STICKERS = [
 ];
 
 // Shop order, cheapest recipe first.
-export const FOOD_ORDER = ['orange-juice', 'pizza', 'pie', 'mango-lassi'];
+export const FOOD_ORDER = ['orange-juice', 'pizza', 'pie', 'mango-lassi', 'tea', 'spaghetti', 'coffee', 'boba', 'cupcake', 'salmon'];
 
 // The menu bar across the top of the restaurant, in Ruhi's order.
 // Foods without a recipe yet show as locked tiles.
@@ -67,6 +68,7 @@ export const MENU = [
   { id: 'tea', name: 'Tea' },
   { id: 'salmon', name: 'Salmon' },
   { id: 'boba', name: 'Boba' },
+  { id: 'cupcake', name: 'Cupcake' },
 ];
 
 export const FOODS = {
@@ -132,6 +134,99 @@ export const FOODS = {
       { label: 'Finished!', tap: 'pie' },
     ],
   },
+  tea: {
+    name: 'Tea',
+    cost: 4,
+    recipePrice: 75,
+    ingredients: [{ id: 'tea-leaf', name: 'tea leaves', count: 2 }],
+    steps: [
+      { label: 'Leaves in the teapot', drag: 'tea-leaf', onto: 'teapot' },
+      { label: 'Pour hot water', drag: 'kettle', onto: 'teapot' },
+      { label: 'Pour the tea', drag: 'teapot', onto: 'cup' },
+      { label: 'Finished!', tap: 'cup' },
+    ],
+  },
+  spaghetti: {
+    name: 'Spaghetti',
+    cost: 9,
+    recipePrice: 90,
+    ingredients: [
+      { id: 'pasta', name: 'pasta', count: 1 },
+      { id: 'tomato', name: 'tomato', count: 1 },
+      { id: 'cheese', name: 'cheese', count: 1 },
+    ],
+    steps: [
+      { label: 'Boil the pasta', drag: 'pasta', onto: 'pot' },
+      { label: 'Pasta on the plate', drag: 'pot', onto: 'plate' },
+      { label: 'Add tomato sauce', drag: 'tomato', onto: 'plate' },
+      { label: 'Sprinkle cheese', drag: 'cheese', onto: 'plate' },
+      { label: 'Finished!', tap: 'plate' },
+    ],
+  },
+  coffee: {
+    name: 'Coffee',
+    cost: 6,
+    recipePrice: 105,
+    ingredients: [
+      { id: 'bean', name: 'coffee beans', count: 3 },
+      { id: 'milk', name: 'milk', count: 1 },
+    ],
+    steps: [
+      { label: 'Beans in the grinder', drag: 'bean', onto: 'grinder' },
+      { label: 'Grind', tap: 'grinder' },
+      { label: 'Coffee in the mug', drag: 'grinder', onto: 'mug' },
+      { label: 'Pour milk', drag: 'milk', onto: 'mug' },
+      { label: 'Finished!', tap: 'mug' },
+    ],
+  },
+  boba: {
+    name: 'Boba',
+    cost: 8,
+    recipePrice: 120,
+    ingredients: [
+      { id: 'boba', name: 'boba pearls', count: 3 },
+      { id: 'milk', name: 'milk', count: 1 },
+    ],
+    steps: [
+      { label: 'Pearls in the cup', drag: 'boba', onto: 'cup' },
+      { label: 'Pour milk', drag: 'milk', onto: 'cup' },
+      { label: 'Put ice', drag: 'ice', onto: 'cup' },
+      { label: 'Put the straw', drag: 'straw', onto: 'cup' },
+      { label: 'Finished!', tap: 'cup' },
+    ],
+  },
+  cupcake: {
+    name: 'Cupcake',
+    cost: 7,
+    recipePrice: 135,
+    ingredients: [
+      { id: 'flour', name: 'flour', count: 1 },
+      { id: 'sprinkles', name: 'sprinkles', count: 3 },
+    ],
+    steps: [
+      { label: 'Batter in the case', drag: 'flour', onto: 'case' },
+      { label: 'Bake', tap: 'oven' },
+      { label: 'Swirl the frosting', drag: 'frosting', onto: 'cupcake' },
+      { label: 'Add sprinkles', drag: 'sprinkles', onto: 'cupcake' },
+      { label: 'Finished!', tap: 'cupcake' },
+    ],
+  },
+  salmon: {
+    name: 'Salmon',
+    cost: 12,
+    recipePrice: 150,
+    ingredients: [
+      { id: 'fish', name: 'fish', count: 1 },
+      { id: 'lemon', name: 'lemon', count: 1 },
+    ],
+    steps: [
+      { label: 'Fish in the pan', drag: 'fish', onto: 'pan' },
+      { label: 'Cook', tap: 'pan' },
+      { label: 'Onto the plate', drag: 'pan', onto: 'plate' },
+      { label: 'Squeeze lemon', drag: 'lemon', onto: 'plate' },
+      { label: 'Finished!', tap: 'plate' },
+    ],
+  },
 };
 
 export const MONSTERS = {
@@ -139,13 +234,15 @@ export const MONSTERS = {
     name: 'Ella',
     favourite: 'pizza',
     sparkle: 'yuck',
-    maxPrice: { 'orange-juice': 15, pizza: 25, 'mango-lassi': 14, pie: 14 },
+    maxPrice: { 'orange-juice': 15, pizza: 25, 'mango-lassi': 14, pie: 14,
+      tea: 12, spaghetti: 26, coffee: 16, boba: 20, salmon: 28, cupcake: 18 },
   },
   bella: {
     name: 'Bella',
     favourite: 'pie',
     sparkle: 'love',
-    maxPrice: { 'orange-juice': 12, pizza: 18, 'mango-lassi': 20, pie: 22 },
+    maxPrice: { 'orange-juice': 12, pizza: 18, 'mango-lassi': 20, pie: 22,
+      tea: 16, spaghetti: 20, coffee: 14, boba: 24, salmon: 30, cupcake: 24 },
   },
   // The next three only come once their decoration (`needs`) is in the restaurant.
   twinkle: {
@@ -153,20 +250,32 @@ export const MONSTERS = {
     favourite: 'mango-lassi',
     sparkle: 'love',
     needs: 'lights',
-    maxPrice: { 'orange-juice': 22, pizza: 35, 'mango-lassi': 30, pie: 28 },
+    maxPrice: { 'orange-juice': 22, pizza: 35, 'mango-lassi': 30, pie: 28,
+      tea: 24, spaghetti: 36, coffee: 26, boba: 32, salmon: 45, cupcake: 30 },
   },
   fife: {
     name: 'Fife',
     favourite: 'orange-juice',
     sparkle: 'yuck',
     needs: 'balloons',
-    maxPrice: { 'orange-juice': 9, pizza: 13, 'mango-lassi': 10, pie: 11 },
+    maxPrice: { 'orange-juice': 9, pizza: 13, 'mango-lassi': 10, pie: 11,
+      tea: 8, spaghetti: 14, coffee: 9, boba: 13, salmon: 17, cupcake: 12 },
   },
   ghuy: {
     name: 'Ghuy',
     favourite: 'pizza',
     sparkle: 'love',
     needs: 'disco',
-    maxPrice: { 'orange-juice': 14, pizza: 24, 'mango-lassi': 17, pie: 18 },
+    maxPrice: { 'orange-juice': 14, pizza: 24, 'mango-lassi': 17, pie: 18,
+      tea: 12, spaghetti: 26, coffee: 20, boba: 22, salmon: 27, cupcake: 19 },
+  },
+  // Gege, the silly watermelon monster, comes for the bubble machine.
+  gege: {
+    name: 'Gege',
+    favourite: 'cupcake',
+    sparkle: 'love',
+    needs: 'bubbles',
+    maxPrice: { 'orange-juice': 13, pizza: 21, 'mango-lassi': 16, pie: 20,
+      tea: 11, spaghetti: 22, coffee: 12, boba: 23, salmon: 24, cupcake: 26 },
   },
 };

@@ -19,6 +19,14 @@ const SPOTS = {
   berry: [[716, 440], [770, 404], [832, 410], [870, 452], [790, 462]],
   mango: [[900, 300], [960, 260], [975, 330]],
   milk: [[56, 590], [128, 560]],
+  pasta: [[540, 530]],
+  lemon: [[300, 226], [128, 345]],
+  'tea-leaf': [[462, 676], [520, 652], [556, 704]],
+  boba: [[648, 716], [700, 690], [752, 718]],
+  bean: [[880, 716], [936, 684], [990, 716]],
+  fish: [[750, 586], [856, 612]],
+  flour: [[818, 716]],
+  sprinkles: [[612, 480], [670, 464], [648, 522]],
 };
 const SPARKLE_SPOT = [650, 285];
 
@@ -37,10 +45,21 @@ const PLANTS = {
 <path d="M90 700Q50 690 40 660Q76 658 90 684Z" fill="#5ED6B0"/><path d="M90 690Q130 680 142 650Q106 650 90 674Z" fill="#5ED6B0"/>
 <g fill="#fff" stroke-width="4"><circle cx="92" cy="596" r="12"/><circle cx="74" cy="606" r="10"/><circle cx="110" cy="606" r="10"/></g><circle cx="92" cy="608" r="8" fill="#FFC93C" stroke-width="3"/></g>`,
 };
-// Which plant each ingredient grows on.
-const PLANT_OF = { orange: 'orange', dough: 'pizza', tomato: 'pizza', cheese: 'pizza', crust: 'pizza', berry: 'berry', mango: 'mango', milk: 'milk' };
+// A small round bush with its middle at (x, y).
+const bush = (x, y, colour) => `${G}<path d="M${x - 62} ${y + 34}a32 32 0 0 1 6-60a40 40 0 0 1 56-22a40 40 0 0 1 56 22a32 32 0 0 1 6 60Z" fill="${colour}"/></g>`;
+PLANTS.tea = bush(510, 692, '#5FBF5A');
+PLANTS.boba = bush(700, 718, '#B79BFF');
+PLANTS.coffee = bush(936, 716, '#2E9E55');
+// Pasta hangs from one more branch of the pizza plant.
+PLANTS.pasta = `${G}<path d="M469 544Q508 552 532 536" fill="none" stroke="#2E9E55" stroke-width="7"/></g>`;
+// Flour comes from a little wheat plant; sprinkles grow on a sprinkle flower.
+PLANTS.wheat = `${G}<path d="M800 760V690M836 760V696" fill="none" stroke="#E0A62A" stroke-width="7"/><path d="M800 690l-10-14M800 690l10-14M836 696l-10-14M836 696l10-14" fill="none" stroke="#E0A62A" stroke-width="6"/></g>`;
+PLANTS.sprinkle = `${G}<path d="M642 552Q636 510 642 470" fill="none" stroke="#2E9E55" stroke-width="9"/><path d="M641 530Q620 512 612 490M641 510Q660 500 670 478" fill="none" stroke="#2E9E55" stroke-width="6"/></g>`;
+// Which plant each ingredient grows on. Lemons share the orange tree; fish swim in the pond.
+const PLANT_OF = { orange: 'orange', dough: 'pizza', tomato: 'pizza', cheese: 'pizza', crust: 'pizza', berry: 'berry', mango: 'mango', milk: 'milk',
+  pasta: 'pasta', lemon: 'orange', 'tea-leaf': 'tea', boba: 'boba', bean: 'coffee', flour: 'wheat', sprinkles: 'sprinkle' };
 
-function scene(plants, withSparkleStem) {
+function scene(plants, withSparkleStem, pondFish) {
   return `<svg class="g-scene" viewBox="0 0 1024 768" role="img" aria-label="The magic garden, with the chef holding a basket">
 <rect width="1024" height="768" fill="#8FD3FF"/>
 <circle cx="900" cy="120" r="56" fill="#FFE066"/>
@@ -50,7 +69,7 @@ function scene(plants, withSparkleStem) {
 <path class="g-grass" d="M0 470l32-60 32 56 32-60 32 58 32-62 32 60 32-58 32 62 32-64 32 62 32-58 32 60 32-62 32 60 32-58 32 58 32-62 32 60 32-58 32 60 32-62 32 58 32-60 32 60 32-62 32 58 32-60 32 62 32-58 32 58 32-60 32 58" fill="none" stroke="#2E9E55" stroke-width="6" stroke-linejoin="round"/>
 ${G}<ellipse cx="800" cy="590" rx="190" ry="76" fill="#4FB7F0"/>
 <path d="M690 580q16-12 32 0M860 620q16-12 32 0" fill="none" stroke="#fff" stroke-width="4"/>
-<g class="g-fish"><path d="M742 566Q790 520 850 560Q880 540 892 536Q886 562 892 590Q876 584 850 574Q790 610 742 566Z" fill="#FF8A73"/><circle cx="772" cy="560" r="5" fill="${INK}" stroke-width="0"/><path d="M800 548Q808 564 800 580" fill="none" stroke-width="3"/></g>
+${pondFish ? '' : `<g class="g-fish"><path d="M742 566Q790 520 850 560Q880 540 892 536Q886 562 892 590Q876 584 850 574Q790 610 742 566Z" fill="#FF8A73"/><circle cx="772" cy="560" r="5" fill="${INK}" stroke-width="0"/><path d="M800 548Q808 564 800 580" fill="none" stroke-width="3"/></g>`}
 <ellipse cx="640" cy="640" rx="30" ry="14" fill="#5ED6B0"/><ellipse cx="960" cy="560" rx="26" ry="12" fill="#5ED6B0"/></g>
 ${plants.map(p => `<g class="g-plant" data-plant="${p}">${PLANTS[p]}</g>`).join('')}
 ${withSparkleStem ? `<path d="M650 330V420" stroke="#2E9E55" stroke-width="10" stroke-linecap="round"/>` : ''}
@@ -58,14 +77,32 @@ ${withSparkleStem ? `<path d="M650 330V420" stroke="#2E9E55" stroke-width="10" s
 </svg>`;
 }
 
+// Things that grow together (everything on the pizza plant, oranges and lemons on one tree).
+const groupOf = ing => (ing === 'pasta' ? 'pizza' : PLANT_OF[ing] ?? ing);
+export const EXTRA_PLANTS = 2;
+
+// Which groups of plants show on this visit: every one the order needs, plus
+// up to EXTRA_PLANTS others picked at random from what the player has planted.
+export function pickGroups(needed, owned, rng = Math.random) {
+  const must = [...new Set(needed.map(groupOf))];
+  const others = [...new Set(owned.map(groupOf))].filter(g => !must.includes(g));
+  const extra = [];
+  while (extra.length < EXTRA_PLANTS && others.length) extra.push(others.splice(Math.floor(rng() * others.length), 1)[0]);
+  return [...must, ...extra];
+}
+
 export function render(stage, ctx, go) {
   const needs = FOODS[ctx.order.foodId].ingredients;
   ctx.basket = {};
   ctx.hasSparkle = false;
 
-  // Everything the player's recipes use grows here; buying a recipe plants more.
-  const growing = [...new Set(ctx.game.owned.flatMap(f => FOODS[f].ingredients.map(i => i.id)))];
-  const plants = [...new Set(growing.map(i => PLANT_OF[i]))];
+  // Buying a recipe plants what it needs, but the garden would get crowded if
+  // everything showed at once. So each visit shows what this order needs plus
+  // a couple of other plants, which keeps "find the right one" as a little game.
+  const owned = [...new Set(ctx.game.owned.flatMap(f => FOODS[f].ingredients.map(i => i.id)))];
+  const groups = pickGroups(needs.map(n => n.id), owned);
+  const growing = owned.filter(i => groups.includes(groupOf(i)));
+  const plants = [...new Set(growing.flatMap(i => [PLANT_OF[i], ...(i === 'pasta' ? ['pizza'] : [])]).filter(Boolean))];
   const sparkle = sparkleAppears();
 
   const fruit = growing.flatMap(ing => (SPOTS[ing] ?? []).map(([x, y]) =>
@@ -74,7 +111,7 @@ export function render(stage, ctx, go) {
     ? `<button class="g-item g-sparkle floaty" data-sparkle style="left:${SPARKLE_SPOT[0]}px;top:${SPARKLE_SPOT[1]}px"><span class="pic">${item('sparkle')}</span></button>
 <div class="g-label baloo" data-sparkle-label>Mystery sparkle!</div>` : '';
 
-  stage.innerHTML = `${scene(plants, sparkle)}${fruit}${sparkleHtml}
+  stage.innerHTML = `${scene(plants, sparkle, growing.includes('fish'))}${fruit}${sparkleHtml}
 <div class="g-task card" aria-live="polite"></div>
 <button class="btn g-back" disabled>Back to kitchen</button>`;
 

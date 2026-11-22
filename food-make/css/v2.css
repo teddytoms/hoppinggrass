@@ -104,8 +104,9 @@
 /* ---------- Shop: two shelves ---------- */
 .s-wrap { padding: 20px 28px; gap: 10px; }
 .s-shelf { font-weight: 800; font-size: 24px; line-height: 1; }
+.s-shelf small { margin-left: 8px; font-size: 18px; font-weight: 700; color: var(--soft); }
 .s-cards { gap: 14px; }
-.s-cards.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.s-cards.three { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .s-card { height: 212px; padding: 10px 12px; border-radius: 26px; gap: 4px; }
 .s-card.s-decor { height: 270px; }
 .s-card.goal-card { background: #FFF3C4; }
@@ -182,7 +183,7 @@
 .w-gate h2 { font-size: 44px; }
 .w-gate .btn { min-width: 110px; font-size: 36px; }
 .w-row { display: flex; gap: 14px; justify-content: center; }
-.w-pick { width: 150px; height: 170px; padding: 8px; border: 4px solid transparent; border-radius: 26px; background: rgba(255, 255, 255, .55); }
+.w-pick { width: 128px; height: 156px; padding: 8px; border: 4px solid transparent; border-radius: 26px; background: rgba(255, 255, 255, .55); }
 .w-pick .pic { width: 100%; height: 100%; }
 .w-pick.on { border-color: var(--ink); background: #fff; box-shadow: 0 6px 0 var(--ink); }
 .w-colour { width: 76px; height: 76px; border: 4px solid var(--ink); border-radius: 50%; }
