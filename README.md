@@ -8,3 +8,5 @@ The home page for hoppinggrass.com, an independent game studio.
 - `big-adventure/`: a copy of Food Make: The Big Adventure, made by `./sync-big-adventure.sh`.
 
 To update a game on the site, run its sync script, then commit and push.
+
+`shots/` holds one picture of each game for the home page cards (800 x 600, taken from the game itself).

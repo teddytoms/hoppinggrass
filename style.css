@@ -78,6 +78,7 @@ a:focus-visible { outline: 3px solid var(--sun); outline-offset: 4px; border-rad
 .shelf { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 .card { background: var(--night); border-radius: 18px; padding: 26px; display: flex; flex-direction: column; gap: 10px; transition: transform 0.2s ease; }
 a.card:hover { transform: translateY(-4px); }
+.card-shot { display: block; width: calc(100% + 28px); max-width: none; height: auto; margin: -14px -14px 8px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: var(--night-3); }
 .card-no { font-family: var(--serif); font-size: 18px; color: var(--sun); }
 .card h3 { font-size: 28px; }
 .card p { color: var(--soft); }
