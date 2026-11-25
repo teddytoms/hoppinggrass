@@ -1,0 +1,56 @@
+/* The Big Adventure, step 2: the Friends page and "What is my name?" on the moon.
+   Thick ink outlines, flat colours, hard offset shadows. Loaded after adventure.css. */
+
+/* ---------- Friends ---------- */
+.fr-wrap { padding: 20px 28px 16px; }
+.fr-h { text-align: center; font-size: 60px; line-height: 1; margin-bottom: 12px; }
+.fr-grid { display: flex; flex-wrap: wrap; gap: 14px 16px; justify-content: center; }
+.fr-card {
+  width: 228px; height: 300px; padding: 6px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  box-shadow: 0 6px 0 var(--ink); color: var(--ink);
+}
+.fr-card:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.fr-pic { width: 100px; height: 114px; }
+.fr-name { font: 400 34px/1 var(--cm-big); letter-spacing: 1.5px; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
+.fr-card .hud-hearts { padding: 1px 8px; border-width: 4px; box-shadow: none; }
+.fr-card .hud-heart { width: 30px; height: 30px; }
+.fr-trait { font: 20px/1 var(--cm-hand); white-space: nowrap; }
+.fr-chips { display: flex; gap: 10px; margin-top: auto; }
+.fr-chip {
+  position: relative; width: 52px; height: 52px; flex: none; display: flex; align-items: center; justify-content: center;
+  border: 4px solid var(--ink); border-radius: 14px; background: #fff; font: 400 34px/1 var(--cm-big);
+}
+.fr-chip .pic { width: 40px; height: 40px; }
+.fr-chip.is-unknown { background: #EFEBDD; color: #8A867A; border-style: dashed; }
+.fr-chip.is-gift { border-radius: 50%; }
+.fr-back { position: absolute; left: 24px; bottom: 16px; }
+
+.fr-over { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(27, 27, 31, .55); }
+.fr-big { width: 860px; padding: 26px 30px; display: flex; align-items: center; gap: 26px; animation: popin .25s ease-out both; }
+.fr-big-left { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.fr-big-pic { width: 280px; height: 356px; }
+.fr-big-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.fr-big-name { font: 400 60px/1 var(--cm-big); letter-spacing: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 0; }
+.fr-big-trait { font: 30px/1 var(--cm-hand); margin-top: -8px; }
+.fr-line { display: flex; align-items: center; gap: 14px; font: 28px/1.05 var(--cm-hand); }
+.fr-line .fr-chip { width: 68px; height: 68px; border-width: 5px; font-size: 44px; }
+.fr-line .fr-chip .pic { width: 52px; height: 52px; }
+.fr-fact.is-shut { background: #EFEBDD; color: var(--soft); }
+.fr-close { align-self: center; min-width: 200px; min-height: 76px; font-size: 38px; margin-top: 4px; }
+
+/* ---------- What is my name? ---------- */
+.mn-scene { position: absolute; left: 0; top: 0; width: 1024px; height: 768px; }
+.mn-panel { position: absolute; left: 62px; top: 92px; width: 900px; padding: 26px 30px; display: flex; align-items: center; gap: 24px; background: #E4DBFF; box-shadow: 0 8px 0 var(--ink); }
+.mn-pic { width: 280px; height: 356px; animation: bob 1.6s ease-in-out infinite; }
+.mn-right { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.mn-say { font: 400 46px/1.02 var(--cm-big); letter-spacing: 1.5px; padding: 14px 22px; }
+.mn-say::before { left: -30px; top: 30px; border: 10px solid transparent; border-left: 0; border-right: 30px solid var(--ink); }
+.mn-say::after { left: -19px; top: 34px; margin: 0; border: 6px solid transparent; border-left: 0; border-right: 20px solid #fff; }
+.mn-label { display: flex; flex-direction: column; gap: 6px; font: 28px/1 var(--cm-hand); }
+.mn-input { width: 420px; height: 84px; font-size: 44px; }
+.mn-input::placeholder { color: #B9B4A6; }
+.mn-buttons { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.mn-ok { min-width: 420px; min-height: 96px; font-size: 48px; }
+.mn-plain { min-height: 72px; font-size: 30px; }
+
+@media (prefers-reduced-motion: reduce) { .mn-pic, .fr-big { animation: none; } }

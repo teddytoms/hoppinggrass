@@ -1,0 +1,301 @@
+/* The Big Adventure: the screens C1 owns (who, comic, my comic, the place), the plate counter
+   and coin box, and the lunch-rush sun. Thick ink outlines, flat colours, hard offset shadows,
+   no gradients and no blur. Loaded after style.css, v2.css and comic.css. */
+
+/* ---------- Shared: a framed comic page with a caption box ---------- */
+.ad-page {
+  position: absolute; inset: 0; overflow: hidden;
+  background-color: var(--page);
+  background-image: radial-gradient(circle at 3px 3px, rgba(27, 27, 31, .16) 2.2px, transparent 2.6px);
+  background-size: 12px 12px;
+}
+.ad-caption { position: absolute; left: 24px; top: 22px; z-index: 5; max-width: 560px; }
+
+/* The sound button sits in the same corner on the new screens. */
+#stage[data-screen="who"] .mute, #stage[data-screen="comic"] .mute, #stage[data-screen="mycomic"] .mute,
+#stage[data-screen="friends"] .mute, #stage[data-screen="moonname"] .mute { right: 24px; bottom: 16px; }
+
+/* ---------- Plate counter and coin box (js/screens/hud.js) ---------- */
+.hud-plates, .hud-coins {
+  height: 64px; padding: 0 16px; display: flex; align-items: center; gap: 10px;
+  border: 6px solid var(--ink); border-radius: 16px; background: #fff; box-shadow: 0 5px 0 var(--ink);
+  font-family: var(--cm-big); font-weight: 400; letter-spacing: 1px; line-height: 1; color: var(--ink);
+}
+.hud-coins { background: #FFE066; }
+.hud-coins .pic { width: 38px; height: 38px; }
+.hud-coins b { font-size: 36px; font-weight: 400; }
+.hud-plate { width: 46px; height: 46px; }
+.hud-plates-text { display: flex; flex-direction: column; gap: 4px; }
+.hud-plates-text b { font-size: 26px; font-weight: 400; white-space: nowrap; }
+.hud-bar { display: block; width: 150px; height: 14px; border: 4px solid var(--ink); border-radius: 8px; background: #fff; overflow: hidden; }
+.hud-bar i { display: block; height: 100%; background: #7BE0C3; }
+.hud-plates.is-full { background: #FFF3B0; }
+.hud-plates.is-full .hud-bar i { background: #FFC93C; }
+
+.hud-plates.is-won { padding-right: 8px; }
+.hud-spoon { width: 50px; height: 50px; margin-left: -2px; transform: rotate(12deg); }
+
+/* A monster's three friendship hearts (hud.js heartsRow). */
+.hud-hearts { display: inline-flex; align-items: center; gap: 2px; padding: 4px 10px; border: 5px solid var(--ink); border-radius: 26px; background: #fff; box-shadow: 0 4px 0 var(--ink); line-height: 0; }
+.hud-heart { width: 36px; height: 36px; }
+.hud-heart.is-new { animation: hud-heart-pop .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes hud-heart-pop { 0% { transform: scale(.2); } 60% { transform: scale(1.5); } 100% { transform: none; } }
+
+/* ---------- Teaching: the "1 2 3 4 5" strip and the bouncing arrow (js/screens/coach.js) ---------- */
+.coach, .coach * { pointer-events: none; }
+.coach { position: absolute; inset: 0; z-index: 58; }
+.coach-strip {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px 10px;
+  border: 5px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 4px 0 var(--ink);
+}
+/* On the place the top middle is taken by the coins, so the strip sits a row lower. */
+#stage[data-screen="place"] .coach-strip { top: 88px; }
+.coach-step { position: relative; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 4px solid var(--ink); border-radius: 12px; background: #EFEBDD; }
+.coach-step .pic { width: 34px; height: 34px; opacity: .45; }
+.coach-step b {
+  position: absolute; left: -9px; top: -9px; width: 24px; height: 24px; border: 3px solid var(--ink); border-radius: 50%; background: #fff;
+  font: 400 16px/18px var(--cm-big); text-align: center;
+}
+.coach-step.is-done { background: #7BE0C3; }
+.coach-step.is-now { background: #FFE066; transform: scale(1.12); }
+.coach-step.is-done .pic, .coach-step.is-now .pic { opacity: 1; }
+.coach-step.is-done b { background: #7BE0C3; }
+.coach-step.is-now b { background: #FF8FB1; }
+.coach-point { position: absolute; width: 0; height: 0; }
+.coach-bounce { position: absolute; left: 0; bottom: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; animation: coach-bounce .9s ease-in-out infinite; }
+.coach-point.is-below .coach-bounce { bottom: auto; top: 0; flex-direction: column-reverse; }
+.coach-point.is-below .coach-arrow { transform: rotate(180deg); }
+.coach-arrow { width: 68px; height: 68px; }
+.coach-text { padding: 2px 14px; border: 5px solid var(--ink); border-radius: 14px; background: #FFE066; font: 400 30px/1.1 var(--cm-big); letter-spacing: 1px; white-space: nowrap; }
+@keyframes coach-bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -14px); } }
+.coach-point.is-below .coach-bounce { animation-name: coach-bounce-up; }
+@keyframes coach-bounce-up { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 14px); } }
+@media (prefers-reduced-motion: reduce) { .coach-bounce, .hud-heart.is-new { animation: none; } }
+
+/* ---------- Who is playing? ---------- */
+#stage[data-screen="who"] { background: var(--page); }
+.w-wrap { padding: 78px 40px 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.w-title { font-size: 64px; text-shadow: none; }
+.w-wrap h2 { font-weight: 400; font-size: 30px; line-height: 1; }
+.w-cards { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 18px; align-content: center; }
+.w-slot { position: relative; min-height: 0; max-height: 290px; display: flex; flex-direction: column; gap: 8px; }
+.w-card {
+  flex: 1; min-height: 0; padding: 10px; border: 6px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 6px 0 var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.w-card:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.w-card .pic { flex: 1; min-height: 0; width: 100%; }
+.w-name { font-size: 34px; line-height: 1; }
+.w-add { border-style: dashed; background: #FFF8EA; }
+.w-plus { font-family: var(--cm-big); font-size: 110px; line-height: .8; }
+.w-remove { min-height: 72px; font-size: 26px; }
+.w-grown { position: absolute; left: 24px; bottom: 16px; min-width: 72px; height: 72px; padding: 0 12px; border: 0; background: none; color: var(--soft); font-family: var(--cm-hand); font-size: 20px; text-decoration: underline; }
+.w-done { min-width: 240px; }
+.w-new, .w-gate { width: 100%; padding: 14px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.w-gate { width: 580px; margin-top: 40px; padding: 30px; gap: 24px; background: #fff; }
+.w-gate h2 { font-size: 52px; }
+.w-gate .btn { min-width: 110px; font-size: 42px; }
+.w-row { display: flex; gap: 14px; justify-content: center; }
+.w-pick { width: 150px; height: 190px; padding: 6px; border: 6px solid transparent; border-radius: 18px; background: rgba(255, 255, 255, .55); }
+.w-pick .pic { width: 100%; height: 100%; }
+.w-pick.on { border-color: var(--ink); background: #fff; box-shadow: 0 6px 0 var(--ink); }
+.w-colour { width: 72px; height: 72px; border: 6px solid var(--ink); border-radius: 50%; }
+.w-colour.on { box-shadow: 0 0 0 5px #fff, 0 0 0 11px var(--ink); }
+.w-label { display: flex; align-items: center; gap: 14px; font-size: 30px; }
+.w-input {
+  width: 300px; height: 72px; padding: 0 18px; border: 6px solid var(--ink); border-radius: 16px; background: #fff; color: var(--ink);
+  font: 400 34px var(--cm-hand); -webkit-user-select: text; user-select: text; touch-action: manipulation;
+}
+.w-buttons { display: flex; gap: 18px; padding-bottom: 6px; }
+.w-go { min-width: 260px; font-size: 40px; }
+.s-ask { position: absolute; inset: 0; z-index: 70; background: rgba(27, 27, 31, .6); display: flex; align-items: center; justify-content: center; }
+.s-ask-box { width: 640px; padding: 30px; background: #fff; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.s-ask-box h2 { font-size: 46px; line-height: 1; }
+.s-ask-box p { font-family: var(--cm-hand); font-size: 28px; line-height: 1.2; }
+.s-ask-buttons { display: flex; gap: 16px; }
+.s-ask-buttons .btn { white-space: nowrap; font-size: 30px; }
+
+/* ---------- Reading a comic ---------- */
+.cv-wrap { background: var(--ink); background-image: none; }
+.cv-page { position: absolute; left: 72px; top: 12px; width: 880px; border: 6px solid #fff; border-radius: 6px; }
+.cv-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; display: flex; align-items: center; justify-content: center; }
+.cv-next { min-width: 300px; height: 76px; font-size: 44px; }
+
+/* ---------- My comic ---------- */
+.mc-wrap { padding: 20px 40px 24px; }
+.mc-h { text-align: center; font-size: 60px; line-height: 1; margin-bottom: 16px; }
+.mc-shelf { display: flex; flex-wrap: wrap; gap: 16px 20px; justify-content: center; align-content: flex-start; }
+.mc-card {
+  width: 220px; height: 178px; padding: 8px; border: 6px solid var(--ink); border-radius: 12px; background: #fff; box-shadow: 0 6px 0 var(--ink);
+  display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--cm-hand); font-size: 20px; line-height: 1.1; color: var(--ink);
+}
+.mc-card:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.mc-pic { width: 100%; height: 118px; border: 4px solid var(--ink); background: #BFE6FF; overflow: hidden; }
+.mc-pic.is-gold { background: #FFE066; }
+.mc-pic svg { width: 100%; height: 100%; overflow: hidden; }
+.mc-title { display: block; white-space: nowrap; }
+.mc-none { font-family: var(--cm-hand); font-size: 32px; }
+.mc-back { position: absolute; left: 24px; bottom: 16px; }
+
+/* ---------- The place ---------- */
+.pl-wrap { position: absolute; inset: 0; overflow: hidden; background: var(--page); }
+.pl-wrap > .pic, .pl-guest, .pl-chef, .pl-victoria { position: absolute; }
+.pl-scene { left: 0; top: 0; width: 1024px; height: 768px; }
+.pl-victoria { left: 437px; top: 418px; width: 150px; height: 198px; padding: 0; border: 0; background: none; z-index: 3; }
+.pl-victoria .pic { width: 100%; height: 100%; }
+/* On the boat and the moon the serving table is in front: Victoria stands just behind it, not in it. */
+.is-boat .pl-victoria, .is-moon .pl-victoria { top: 372px; }
+.is-boat .pl-says, .is-moon .pl-says { bottom: 408px; }
+.pl-victoria:active { transform: translateY(3px); }
+/* What Victoria says: a small bubble over her head. Tap her for another. */
+.pl-says {
+  position: absolute; left: 470px; bottom: 362px; z-index: 4; width: 250px; padding: 8px 14px; border-width: 5px; border-radius: 22px;
+  font: 22px/1.12 var(--cm-hand); pointer-events: none; transform-origin: 20% 100%;
+}
+.pl-says::before { left: 30px; border-top-width: 22px; border-left-width: 5px; border-right-width: 12px; }
+.pl-says::after { left: 34px; margin-top: -6px; border-top-width: 15px; border-left-width: 3px; border-right-width: 7px; }
+.pl-says.is-tip { background: #FFF3B0; }
+.pl-says.is-tip::after { border-top-color: #FFF3B0; }
+.pl-says.pop { animation: popin .25s ease-out both; }
+.pl-customer { position: absolute; inset: 0; pointer-events: none; }
+.pl-guest svg, .pl-chef svg { transform-origin: 50% 100%; }
+.pl-customer.is-new .pl-guest { animation: pl-enter .8s ease-out; }
+@keyframes pl-enter { 0% { transform: translateX(-380px); } 55% { transform: translateX(0); } 72% { transform: translateY(-18px); } 100% { transform: none; } }
+.pl-wrap::after { content: ''; position: absolute; inset: 8px; border: 8px solid var(--ink); border-radius: 6px; pointer-events: none; }
+.pl-sign {
+  position: absolute; left: 24px; top: 80px; z-index: 4; max-width: 520px; height: 52px; padding: 0 12px; display: flex; align-items: center; gap: 6px;
+  border: 5px solid var(--ink); background: #fff; font: 22px/1.05 var(--cm-hand); box-shadow: 0 4px 0 var(--ink); white-space: nowrap;
+}
+.pl-sign .pic { width: 38px; height: 38px; }
+.pl-hud { position: absolute; right: 24px; top: 22px; z-index: 5; display: flex; gap: 12px; }
+.pl-side { position: absolute; right: 24px; top: 100px; z-index: 5; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+.pl-side .btn { width: 132px; height: 72px; padding: 0 6px; gap: 5px; font-size: 27px; box-shadow: 0 5px 0 var(--ink); }
+.pl-side .btn .pic { width: 30px; height: 30px; }
+/* Presents from friends, kept for good on a little shelf. */
+.pl-shelf { position: absolute; right: 180px; top: 92px; z-index: 4; height: 56px; padding: 0 8px 13px; display: flex; align-items: flex-end; gap: 2px; }
+.pl-shelf::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 13px; background: #C98A4B; border: 4px solid var(--ink); border-radius: 4px; }
+.pl-shelf .pic { width: 40px; height: 40px; }
+.pl-shelf .pic.is-new { animation: hud-heart-pop .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+.pl-who { width: 72px; height: 72px; padding: 4px; border: 6px solid var(--ink); border-radius: 50%; background: #fff; box-shadow: 0 5px 0 var(--ink); overflow: hidden; }
+.pl-who .pic { width: 100%; height: 100%; }
+.pl-who:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+/* The customer's bubble grows upwards from just above its head. */
+.pl-bubble-box { position: absolute; left: 120px; bottom: 396px; width: 340px; z-index: 4; }
+.pl-bubble-box.is-new { animation: popin .3s ease-out .6s both; }
+.pl-bubble { position: relative; display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 10px 16px; font-size: 30px; line-height: 1.05; }
+.pl-bubble::before { left: 96px; }
+.pl-bubble::after { left: 101px; }
+.pl-order { display: flex; align-items: center; gap: 10px; min-height: 76px; }
+.pl-hello { font-size: 23px; line-height: 1.1; color: var(--soft); padding-top: 12px; }
+/* The customer's name and three hearts, on a tag at the top of the bubble. */
+.pl-tag {
+  position: absolute; left: 14px; top: -30px; height: 46px; padding: 0 6px 0 14px; display: flex; align-items: center; gap: 8px;
+  border: 5px solid var(--ink); border-radius: 26px; background: #FFE066; box-shadow: 0 4px 0 var(--ink);
+}
+.pl-tag b { font: 400 28px/1 var(--cm-big); letter-spacing: 1px; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; padding: 2px 0; }
+.pl-tag .hud-hearts { padding: 0; border: 0; box-shadow: none; background: none; }
+.pl-tag .hud-heart { width: 30px; height: 30px; }
+.pl-food { width: 72px; height: 72px; }
+.pl-words { flex: 1; }
+.pl-bubble.is-riddle { justify-content: center; text-align: center; }
+.pl-x3 {
+  position: absolute; right: -16px; top: -22px; min-width: 70px; padding: 4px 10px; border: 5px solid var(--ink); border-radius: 50%;
+  background: #FFE066; font: 42px/1 var(--cm-big); letter-spacing: 1px; text-align: center; transform: rotate(8deg);
+}
+.pl-travel { position: absolute; left: 478px; top: 176px; z-index: 6; width: 380px; height: 88px; padding: 0 12px; font-size: 38px; white-space: nowrap; }
+.pl-travel .pic { width: 70px; height: 70px; }
+.pl-make { position: absolute; left: 372px; bottom: 16px; z-index: 6; width: 280px; height: 96px; font-size: 58px; }
+.pl-dots {
+  position: absolute; left: 24px; bottom: 16px; z-index: 5; height: 56px; padding: 0 16px; display: flex; align-items: center; gap: 8px;
+  font: 26px/1 var(--cm-big); letter-spacing: 1px; white-space: nowrap; border-width: 5px; box-shadow: 0 4px 0 var(--ink);
+}
+.pl-dots span { margin-right: 4px; }
+.pl-dots i { width: 22px; height: 22px; border: 4px solid var(--ink); border-radius: 50%; background: #fff; }
+.pl-dots i.full { background: #7BE0C3; }
+
+/* Overlays: the SUDDENLY! panel, the mystery picker, "To be continued..." */
+.pl-over { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(27, 27, 31, .55); }
+.pl-sudden-panel {
+  width: 620px; padding: 18px 28px 24px; background: #FFE066; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  animation: pl-flip .55s cubic-bezier(.3, 1.4, .5, 1) both;
+}
+@keyframes pl-flip { 0% { transform: perspective(900px) rotateY(90deg) scale(.7); } 100% { transform: none; } }
+.pl-sudden-word { width: 480px; height: 130px; }
+.pl-sudden-pic { position: relative; width: 210px; height: 210px; }
+.pl-sudden-pic .pl-x3 { right: -30px; top: 0; font-size: 56px; }
+.pl-sudden-line { font: 36px/1.1 var(--cm-hand); max-width: 520px; }
+.pl-sudden-buttons { display: flex; gap: 16px; margin-top: 8px; }
+.pl-sudden-buttons .btn { font-size: 40px; min-height: 80px; }
+
+.pl-pick { align-items: flex-end; background: transparent; z-index: 25; }
+.pl-pick-panel { position: relative; width: 976px; margin-bottom: 16px; padding: 12px 110px 18px 150px; background: #fff; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.pl-pick-title { font: 40px/1 var(--cm-big); letter-spacing: 1px; }
+.pl-pick-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.pk-btn {
+  width: 132px; height: 124px; padding: 6px; border: 6px solid var(--ink); border-radius: 16px; background: #FFF3B0; box-shadow: 0 5px 0 var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 20px/.95 var(--cm-hand);
+}
+.pk-btn .pic { width: 64px; height: 64px; flex: none; }
+.pk-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.pl-pick-back { position: absolute; left: 20px; top: 8px; }
+
+/* The Golden Spoon card, after the last comic. */
+.pl-tbc { z-index: 35; background: var(--ink); }
+.pl-tbc-panel { width: 964px; min-height: 724px; justify-content: center; padding: 30px 40px; background: #FFE066; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; animation: pl-flip .55s cubic-bezier(.3, 1.4, .5, 1) both; }
+.pl-tbc-title { font: 400 104px/1 var(--cm-big); letter-spacing: 3px; transform: rotate(-3deg); }
+.pl-tbc-big { font: 54px/1.1 var(--cm-hand); }
+.pl-tbc .btn { margin-top: 10px; font-size: 44px; min-height: 84px; }
+.pl-spoon-row { display: flex; align-items: flex-end; justify-content: center; gap: 16px; }
+.pl-spoon-chef { width: 190px; height: 270px; }
+.pl-spoon-pic { width: 300px; height: 300px; animation: pulse 1.6s ease-in-out infinite; }
+
+/* A thank-you gift. */
+.pl-gift { z-index: 32; }
+.pl-gift-panel { position: relative; width: 860px; padding: 26px 30px; background: #FFD3DF; display: flex; align-items: center; gap: 22px; animation: pl-flip .55s cubic-bezier(.3, 1.4, .5, 1) both; }
+.pl-gift-who { width: 270px; height: 344px; }
+.pl-gift-hearts { position: absolute; left: 92px; top: 10px; }
+.pl-gift-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.pl-gift-say { font: 400 44px/1 var(--cm-big); letter-spacing: 1.5px; padding: 12px 20px; }
+.pl-gift-say::before { left: -30px; top: 24px; border: 10px solid transparent; border-left: 0; border-right: 30px solid var(--ink); }
+.pl-gift-say::after { left: -19px; top: 28px; margin: 0; border: 6px solid transparent; border-left: 0; border-right: 20px solid #fff; }
+.pl-gift-row { display: flex; align-items: center; gap: 12px; font: 30px/1.05 var(--cm-hand); margin-top: 6px; }
+.pl-gift-pic { width: 92px; height: 92px; padding: 6px; border: 5px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 4px 0 var(--ink); }
+.pl-gift-name { flex: 1; }
+.pl-gift-coins { display: flex; align-items: center; gap: 6px; padding: 4px 14px; border: 5px solid var(--ink); border-radius: 16px; background: #FFE066; font: 400 38px/1 var(--cm-big); white-space: nowrap; }
+.pl-gift-coins .pic { width: 34px; height: 34px; }
+.pl-fact { width: 100%; padding: 8px 16px 10px; border: 5px solid var(--ink); background: #FFF3B0; display: flex; flex-direction: column; gap: 2px; transform: rotate(-1deg); box-shadow: 0 4px 0 var(--ink); }
+.pl-fact b { font: 400 24px/1 var(--cm-big); letter-spacing: 1px; }
+.pl-fact span { font: 26px/1.1 var(--cm-hand); }
+.pl-gift-ok { align-self: center; min-width: 260px; min-height: 80px; font-size: 40px; }
+
+/* The Map: five places to cook in. */
+.pl-map { z-index: 31; }
+.pl-map-panel { width: 980px; padding: 20px 20px 22px; background: #BFE6FF; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.pl-map-title { font: 400 56px/1 var(--cm-big); letter-spacing: 2px; }
+.pl-map-row { display: flex; gap: 12px; }
+.pl-map-card {
+  width: 176px; padding: 6px 6px 8px; border: 6px solid var(--ink); border-radius: 14px; background: #fff; box-shadow: 0 6px 0 var(--ink);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; font: 400 30px/1 var(--cm-big); letter-spacing: 1px;
+}
+.pl-map-card .pic { width: 100%; height: 120px; border: 4px solid var(--ink); overflow: hidden; }
+.pl-map-card .pic svg { overflow: hidden; }
+.pl-map-card.is-here { background: #FFE066; }
+.pl-map-card:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+
+/* ---------- The lunch-rush sun (js/main.js): slides across the top, then sets quietly ---------- */
+.rush-sun { position: absolute; left: 0; top: 2px; width: 1024px; height: 100px; z-index: 55; pointer-events: none; opacity: 0; }
+.rush-sun.is-on { opacity: 1; }
+.rush-sun.is-set { opacity: 0; transition: opacity 3s ease-in; }
+.rush-sun-body { position: absolute; left: 0; top: 0; width: 88px; height: 88px; border-radius: 50%; background: #FFF3B0; border: 4px solid var(--ink); }
+.rush-sun.is-on .rush-sun-body { animation: rush-slide var(--rush-time, 90s) linear forwards; }
+@keyframes rush-slide {
+  0% { transform: translate(8px, 8px); }
+  25% { transform: translate(250px, 0); }
+  50% { transform: translate(480px, -6px); }
+  75% { transform: translate(710px, 0); }
+  100% { transform: translate(926px, 10px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-spoon-pic, .pl-says.pop, .pl-shelf .pic.is-new { animation: none; }
+  .rush-sun.is-on .rush-sun-body { animation: none; transform: translate(480px, 0); }
+}

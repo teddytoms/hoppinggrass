@@ -1,0 +1,105 @@
+/* The comic-book look: a cream dotted page, bowed panels, caption boxes, speech bubbles and sound words.
+   Comic pages come from js/comic.js; the other classes are for screens that want the same look in HTML. */
+
+:root {
+  --cm-ink: #1B1B1F;
+  --cm-page: #FFF6DC;
+  --cm-caption: #FFF3B0;
+  --cm-sun: #FFC93C;
+  --cm-big: 'Bangers', Impact, 'Baloo 2', sans-serif;
+  --cm-hand: 'Patrick Hand', 'Comic Sans MS', 'Baloo 2', cursive;
+}
+
+/* The page: 4 by 3, like the 1024 x 768 stage. Dots are flat, not shaded. */
+.comic-page {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--cm-page);
+  background-image: radial-gradient(circle at 3px 3px, rgba(27, 27, 31, .16) 2.2px, transparent 2.6px);
+  background-size: 12px 12px;
+  color: var(--cm-ink);
+}
+.comic-defs { position: absolute; }
+.comic-title { position: absolute; left: 0; top: 0; width: 100%; }
+.comic-title svg, .comic-panel svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.comic-panel { position: absolute; transform-origin: 50% 60%; }
+
+/* A screen hides panels it has not shown yet, then pops each one in. */
+.comic-panel.is-hidden { visibility: hidden; }
+.comic-panel.pop { animation: cm-pop .38s cubic-bezier(.3, 1.5, .5, 1) both; }
+@keyframes cm-pop {
+  0% { transform: scale(.6) rotate(-3deg); opacity: 0; }
+  70% { transform: scale(1.04) rotate(.6deg); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+
+/* The same pieces for HTML screens. */
+.cm-panel {
+  background: #fff;
+  border: 7px solid var(--cm-ink);
+  border-radius: 255px 14px 225px 14px / 14px 225px 14px 255px;
+}
+.cm-caption {
+  display: inline-block;
+  padding: 4px 14px;
+  background: var(--cm-caption);
+  border: 5px solid var(--cm-ink);
+  font: 24px/1.2 var(--cm-hand);
+  color: var(--cm-ink);
+}
+.cm-bubble {
+  position: relative;
+  display: inline-block;
+  padding: 12px 22px;
+  background: #fff;
+  border: 6px solid var(--cm-ink);
+  border-radius: 30px;
+  font: 27px/1.15 var(--cm-hand);
+  color: var(--cm-ink);
+}
+.cm-bubble::before, .cm-bubble::after {
+  content: '';
+  position: absolute;
+  left: 34px;
+  top: 100%;
+  border: 16px solid transparent;
+  border-bottom: 0;
+  border-left-width: 6px;
+  border-top: 30px solid var(--cm-ink);
+}
+.cm-bubble::after {
+  left: 39px;
+  margin-top: -7px;
+  border-width: 9px;
+  border-left-width: 3px;
+  border-bottom: 0;
+  border-top: 22px solid #fff;
+}
+.cm-bubble.is-right::before { left: auto; right: 34px; transform: scaleX(-1); }
+.cm-bubble.is-right::after { left: auto; right: 39px; transform: scaleX(-1); }
+/* A jagged bubble for shouting. */
+.cm-shout {
+  display: inline-block;
+  padding: 26px 40px;
+  background: var(--cm-sun);
+  font: 40px/1 var(--cm-big);
+  letter-spacing: 2px;
+  color: var(--cm-ink);
+  clip-path: polygon(0 22%, 14% 16%, 10% 0, 28% 12%, 40% 0, 50% 12%, 64% 0, 72% 14%, 92% 4%, 88% 26%, 100% 38%, 90% 54%, 100% 76%, 84% 78%, 80% 100%, 62% 86%, 48% 100%, 38% 86%, 18% 98%, 18% 78%, 0 70%, 10% 50%);
+}
+.cm-sfx {
+  display: inline-block;
+  font: 64px/1 var(--cm-big);
+  letter-spacing: 3px;
+  color: #FFE066;
+  -webkit-text-stroke: 8px var(--cm-ink);
+  paint-order: stroke fill;
+  transform: rotate(-6deg);
+}
+.cm-title { font: 50px/1 var(--cm-big); letter-spacing: 2px; color: var(--cm-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .comic-panel.pop { animation: none; }
+}

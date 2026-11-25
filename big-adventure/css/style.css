@@ -1,0 +1,278 @@
+/* Food Make: The Big Adventure. Shared look: a comic book. The game is drawn on a
+   1024 x 768 "stage" that main.js scales to fit whatever screen it is on.
+   Thick ink outlines, flat colours, hard offset shadows (no blur), Bangers for
+   shouting and Patrick Hand for talking (fonts are set in css/comic.css). */
+
+:root { --ink: #1B1B1F; --soft: #4A4A55; --page: #FFF6DC; }
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--ink);
+  overscroll-behavior: none;
+}
+body {
+  font-family: 'Patrick Hand', 'Comic Sans MS', 'Baloo 2', system-ui, sans-serif; font-weight: 400; font-synthesis: none; color: var(--ink);
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+#frame {
+  position: fixed; inset: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+#fit { position: relative; width: 100%; height: 100%; }
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1024px; height: 768px; margin: -384px 0 0 -512px;
+  transform-origin: 50% 50%;
+  overflow: hidden; background: var(--page); touch-action: none;
+}
+
+.screen { position: absolute; inset: 0; }
+
+h1, h2, p { margin: 0; }
+.baloo { font-family: 'Bangers', Impact, 'Baloo 2', sans-serif; font-weight: 400; letter-spacing: 1px; }
+.pic { display: inline-block; flex: none; line-height: 0; }
+.pic svg, .fill svg { display: block; width: 100%; height: 100%; }
+svg { overflow: visible; }
+
+/* ---------- Buttons ----------
+   Every button is at least 72 x 72 on the stage, so it is still at least
+   64 x 64 on the real screen when the stage is shrunk a little to fit
+   (for example an iPad with the browser's toolbar showing). */
+button { font: inherit; color: inherit; margin: 0; cursor: pointer; touch-action: none; -webkit-appearance: none; appearance: none; }
+.btn {
+  min-width: 72px; min-height: 72px; padding: 0 26px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  border: 6px solid var(--ink); border-radius: 18px; background: #FFE066; color: var(--ink);
+  font-family: 'Bangers', Impact, 'Baloo 2', sans-serif; font-weight: 400; font-size: 32px; letter-spacing: 1.5px; line-height: 1;
+  box-shadow: 0 6px 0 var(--ink);
+}
+.btn:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+.btn[disabled][disabled] { background: #E4E0D4; color: #8A867A; border-color: #8A867A; box-shadow: 0 6px 0 #8A867A; cursor: default; }
+.btn.pink { background: #FF8FB1; }
+.btn.mint { background: #7BE0C3; }
+.btn.white { background: #fff; }
+.btn.round { border-radius: 50%; padding: 0; }
+
+.mute { position: absolute; z-index: 60; width: 72px; height: 72px; padding: 0; border-radius: 50%; background: #fff; right: 24px; bottom: 24px; }
+.mute .pic { width: 44px; height: 44px; }
+#stage[data-screen="garden"] .mute { left: 16px; right: auto; bottom: 16px; }
+#stage[data-screen="kitchen"] .mute { right: 44px; top: 44px; bottom: auto; }
+#stage[data-screen="price"] .mute { left: 24px; top: 24px; right: auto; bottom: auto; }
+#stage[data-screen="shop"] .mute { right: 24px; top: 24px; bottom: auto; }
+
+.card { border: 6px solid var(--ink); background: #fff; box-shadow: 0 6px 0 var(--ink); }
+.bubble {
+  border: 6px solid var(--ink); border-radius: 30px 30px 30px 6px; background: #fff;
+  font-family: 'Patrick Hand', 'Comic Sans MS', 'Baloo 2', cursive; font-weight: 400; line-height: 1.1;
+}
+
+/* ---------- Little animations (none of them rush the player) ---------- */
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes wobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@keyframes dance {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  20% { transform: translateY(-56px) rotate(-11deg) scale(1.04); } 40% { transform: translateY(0) rotate(0) scale(1, .94); }
+  60% { transform: translateY(-56px) rotate(11deg) scale(1.04); } 80% { transform: translateY(0) rotate(0) scale(1, .94); }
+}
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+@keyframes popin { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.floaty { animation: bob 2.4s ease-in-out infinite; }
+.wobble { animation: wobble .4s ease-in-out; }
+/* The one thing to tap next: it pulses and a flat yellow ring breathes around it (no blur). */
+@keyframes hintring { 0%, 100% { box-shadow: 0 6px 0 var(--ink), 0 0 0 5px #FFE066; } 50% { box-shadow: 0 6px 0 var(--ink), 0 0 0 14px #FFE066; } }
+.hint { animation: pulse 1.2s ease-in-out infinite, hintring 1.2s ease-in-out infinite; }
+.dance { animation: dance 1.1s ease-in-out 3; transform-origin: 50% 100%; }
+.shake { animation: shake .5s ease-in-out; }
+.popin { animation: popin .3s ease-out; }
+
+
+.stub { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+
+/* ---------- Magic garden ---------- */
+.g-item {
+  position: absolute; width: 72px; height: 72px; margin: -36px 0 0 -36px; padding: 6px;
+  border: 0; background: none; border-radius: 50%;
+}
+.g-item .pic { width: 60px; height: 60px; pointer-events: none; }
+.g-sparkle { width: 112px; height: 112px; margin: -56px 0 0 -56px; }
+.g-sparkle .pic { width: 104px; height: 104px; }
+.g-label {
+  position: absolute; left: 560px; top: 176px; padding: 8px 16px;
+  border: 4px solid var(--ink); border-radius: 18px; background: #fff; font-weight: 700; font-size: 18px;
+}
+.g-task {
+  position: absolute; left: 24px; top: 24px; padding: 10px 18px; border-radius: 22px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.g-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; font-weight: 800; font-size: 26px; line-height: 1; }
+.g-dots { display: flex; gap: 6px; }
+.g-dot { width: 36px; height: 36px; border-radius: 50%; background: #fff; border: 3px dashed var(--ink); display: flex; align-items: center; justify-content: center; }
+.g-dot.full { border-style: solid; background: #FFF1D6; }
+.g-dot .pic { width: 26px; height: 26px; }
+.g-back { position: absolute; right: 24px; top: 24px; font-size: 24px; }
+
+/* ---------- Kitchen ---------- */
+#stage[data-screen="kitchen"] { background: #FFE9A8; }
+.k-wrap { height: 100%; padding: 24px; display: flex; gap: 24px; }
+.k-panel { width: 300px; flex: none; padding: 20px; border-radius: 40px; display: flex; flex-direction: column; gap: 12px; }
+.k-title { display: flex; align-items: center; gap: 10px; }
+.k-title .pic { width: 52px; height: 52px; }
+.k-title h1 { font-weight: 800; font-size: 30px; line-height: 1; }
+.k-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.k-step {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; background: #F4EEFF;
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1; border: 4px solid transparent;
+}
+.k-step.done { background: #D8F5E9; }
+.k-step.now { background: #FFC93C; border-color: var(--ink); font-weight: 800; font-size: 24px; }
+.k-num { flex: none; width: 36px; height: 36px; }
+.k-circle { border-radius: 50%; background: #fff; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.k-cost { padding: 10px 14px; border-radius: 18px; background: var(--ink); color: #fff; font-size: 17px; text-align: center; }
+.k-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.k-work { flex: 1; position: relative; border-radius: 40px; background: #BFEAF5; overflow: hidden; }
+.k-counter { position: absolute; left: 0; right: 0; bottom: 0; height: 170px; background: #F7B267; border-top: 18px solid #E0934A; }
+.k-things { position: absolute; inset: 0; }
+.k-thing { position: absolute; touch-action: none; }
+.k-thing svg, .k-tile svg { pointer-events: none; }
+.k-thing.target::after {
+  content: ''; position: absolute; inset: -12px; border: 5px dashed #FF5E8A; border-radius: 28px; pointer-events: none;
+}
+.k-thing.dragging, .k-tile.dragging { z-index: 60; animation: none; }
+.k-twinkle { position: absolute; right: -18px; top: -26px; width: 84px; height: 84px; pointer-events: none; }
+.k-label {
+  position: absolute; left: 24px; top: 20px; padding: 8px 18px;
+  border: 4px solid var(--ink); border-radius: 18px; background: #fff; font-weight: 800; font-size: 24px;
+}
+.k-tray { position: relative; z-index: 5; height: 132px; flex: none; padding: 14px 20px; border-radius: 32px; display: flex; align-items: center; gap: 16px; }
+.k-tray-name { font-weight: 800; font-size: 20px; width: 84px; line-height: 1.1; }
+.k-tiles { display: flex; gap: 12px; }
+.k-tile {
+  position: relative; width: 92px; height: 92px; padding: 12px; touch-action: none;
+  border: 4px solid var(--ink); border-radius: 22px; background: #FFF1D6;
+}
+.k-tile.k-sparkle { background: #EDE6FF; }
+.k-count {
+  position: absolute; right: -10px; top: -12px; min-width: 34px; height: 34px; padding: 0 6px;
+  border: 3px solid var(--ink); border-radius: 17px; background: #FF5E8A; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; line-height: 1;
+}
+.k-tip { flex: 1; font-size: 15px; line-height: 1.25; color: var(--soft); }
+
+/* ---------- Price ---------- */
+#stage[data-screen="price"] { background: #FFD3DF; }
+.p-wrap { height: 100%; padding: 32px; display: flex; gap: 32px; }
+.p-left { width: 420px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; }
+.p-bubble { padding: 14px 22px; font-size: 30px; }
+.p-bubble.loud { background: #FFC93C; font-size: 40px; }
+.p-monster { width: 400px; height: 509px; }
+.p-card { flex: 1; min-width: 0; padding: 28px; border-radius: 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.p-card h1 { font-weight: 800; font-size: 38px; line-height: 1.05; text-align: center; }
+.p-cost { display: flex; align-items: center; gap: 16px; padding: 10px 20px; border-radius: 22px; background: #FFF1D6; font-weight: 700; font-size: 24px; }
+.p-cost .pic { width: 60px; height: 60px; }
+.p-controls { display: flex; align-items: center; gap: 22px; }
+.p-controls .btn { width: 92px; height: 92px; font-size: 60px; }
+.p-minus { background: #6EC6FF; }
+.p-plus { background: #FF8A3D; }
+.p-coin {
+  width: 190px; height: 190px; border: 6px solid var(--ink); border-radius: 50%; background: #FFC93C;
+  box-shadow: 0 0 0 10px #FFE066 inset; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 76px; line-height: 1;
+}
+.p-piggy { width: 100%; padding: 14px 20px; border-radius: 22px; background: #D8F5E9; display: flex; align-items: center; justify-content: center; gap: 14px; font-weight: 800; font-size: 28px; }
+.p-piggy.paid { background: #FFE066; font-size: 36px; }
+.p-piggy .pic { width: 52px; height: 44px; }
+.p-action { width: 100%; }
+.p-action .btn { width: 100%; height: 84px; border-radius: 26px; font-size: 34px; }
+
+/* ---------- Shop ---------- */
+#stage[data-screen="shop"] { background: #EDE6FF; }
+.s-wrap { height: 100%; padding: 24px 32px; display: flex; flex-direction: column; gap: 22px; }
+.s-top { display: flex; align-items: center; gap: 20px; padding-right: 84px; }
+.s-top h1 { flex: 1; font-weight: 800; font-size: 48px; line-height: 1; }
+.s-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.s-card { height: 380px; padding: 18px 14px; border-radius: 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.s-card.later { background: #DDD3F2; }
+.s-card.owned { background: #F3FBF7; }
+.s-food { width: 150px; height: 150px; }
+.s-card.later .s-food { opacity: .55; }
+.s-card h2 { font-weight: 800; font-size: 28px; line-height: 1; flex: 1; }
+.s-have { display: flex; align-items: center; gap: 8px; font-family: 'Baloo 2', sans-serif; font-size: 22px; min-height: 72px; }
+.s-have .pic { width: 36px; height: 36px; }
+.s-buy { width: 100%; font-size: 28px; }
+.s-more { font-family: 'Baloo 2', sans-serif; font-size: 22px; color: var(--soft); line-height: 1; }
+.s-locked { display: flex; align-items: center; gap: 10px; min-height: 72px; padding: 0 20px; border-radius: 20px; background: #5A4470; color: #E4DBFF; font-family: 'Baloo 2', sans-serif; font-size: 26px; }
+.s-locked .pic { width: 30px; height: 30px; }
+.s-bottom { flex: 1; display: flex; align-items: center; justify-content: center; }
+.s-news { display: flex; align-items: center; gap: 12px; padding: 12px 26px; border: 4px solid var(--ink); border-radius: 26px; background: #FFE066; font-weight: 800; font-size: 30px; line-height: 1.1; }
+.s-news .pic { width: 56px; height: 56px; }
+.s-reset {
+  position: absolute; left: 32px; bottom: 12px; min-width: 72px; height: 72px; padding: 0 12px;
+  border: 0; background: none; color: var(--soft); font-size: 17px; text-decoration: underline;
+}
+.s-ask { position: absolute; inset: 0; z-index: 40; background: rgba(59, 42, 74, .6); display: flex; align-items: center; justify-content: center; }
+.s-ask-box { width: 640px; padding: 32px; border-radius: 36px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.s-ask-box h2 { font-weight: 800; font-size: 40px; line-height: 1; }
+.s-ask-box p { font-size: 20px; line-height: 1.3; }
+.s-ask-buttons { display: flex; gap: 16px; }
+.s-ask-buttons .btn { white-space: nowrap; font-size: 24px; }
+
+/* ---------- More life: everything below is decoration only ---------- */
+@keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.screen { animation: fadein .22s ease-out; }
+
+/* Monsters breathe, blink, wave their top hand and glow at the fingertips. */
+@keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes blink { 0%, 91%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes wave { 0%, 58%, 100% { transform: rotate(0); } 66% { transform: rotate(16deg); } 76% { transform: rotate(-12deg); } 86% { transform: rotate(12deg); } }
+@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+.m-breathe { animation: breathe 3.2s ease-in-out infinite; }
+.m-blink { transform-box: fill-box; transform-origin: 50% 50%; animation: blink 4.6s infinite; }
+.m-wave { transform-box: fill-box; transform-origin: 50% 100%; animation: wave 5.5s ease-in-out infinite; }
+.m-glow { animation: glow 1.8s ease-in-out infinite; }
+
+/* Garden: clouds drift, grass sways, the salmon jumps, plants rustle, the chef hops. */
+@keyframes drift { from { transform: translateX(-30px); } to { transform: translateX(50px); } }
+@keyframes grass { from { transform: skewX(-2.5deg); } to { transform: skewX(2.5deg); } }
+@keyframes fishjump { 0%, 78%, 100% { transform: translateY(0) rotate(0); } 86% { transform: translateY(-74px) rotate(-22deg); } 93% { transform: translateY(-20px) rotate(16deg); } }
+@keyframes rustle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-2.5deg); } 75% { transform: rotate(2.5deg); } }
+@keyframes hop { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(var(--lean, 0px), -26px) rotate(-3deg); } 60% { transform: translate(var(--lean, 0px), 0); } 80% { transform: translate(calc(var(--lean, 0px) / 2), -12px) rotate(3deg); } }
+@keyframes spin { 0%, 100% { transform: rotate(-12deg) scale(1); } 50% { transform: rotate(12deg) scale(1.1); } }
+.g-chef { transform-box: fill-box; transform-origin: 50% 100%; }
+.g-chef.hop { animation: hop .6s ease-out; }
+.g-sparkle .pic { animation: spin 2.4s ease-in-out infinite; }
+
+/* Kitchen: the thing you just used bounces, ticks pop, the oven glows, the blender shakes. */
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.14, .9); } 70% { transform: scale(.96, 1.06); } 100% { transform: scale(1); } }
+@keyframes cooking { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18) saturate(1.2); } }
+@keyframes rattle { 0%, 100% { transform: translate(0, 0) rotate(0); } 20% { transform: translate(-5px, 0) rotate(-3deg); } 40% { transform: translate(5px, -2px) rotate(3deg); } 60% { transform: translate(-4px, 0) rotate(-2deg); } 80% { transform: translate(4px, -1px) rotate(2deg); } }
+.k-thing.bump svg, .p-coin.bump { animation: bump .35s ease-out; transform-origin: 50% 100%; }
+.p-coin.bump { transform-origin: 50% 50%; }
+.k-thing.cooking svg { animation: cooking 1.1s ease-in-out infinite; }
+.k-thing.shake-it svg { animation: rattle .5s ease-in-out; }
+.k-step.just .k-num { animation: popin .35s ease-out; }
+.k-step.just { animation: bump .35s ease-out; }
+
+/* Price: the monster jumps at "TOO MUCH!", coins fly to the piggy bank, hearts float for love. */
+@keyframes jump { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-60px) scale(1.05); } 50% { transform: translateY(0) scale(1.04, .94); } 70% { transform: translateY(-18px); } }
+@keyframes heart { 0% { transform: translateY(0) scale(.4); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-300px) scale(1.1); opacity: 0; } }
+.jump { animation: jump .6s ease-out; transform-origin: 50% 100%; }
+.p-left, .p-card { position: relative; }
+.p-fly { position: absolute; z-index: 30; width: 34px; height: 34px; border: 4px solid var(--ink); border-radius: 50%; background: #FFC93C; pointer-events: none; }
+.p-heart { position: absolute; bottom: 300px; width: 44px; height: 42px; pointer-events: none; opacity: 0; animation: heart 2.4s ease-out infinite; }
+.p-heart svg { display: block; width: 100%; height: 100%; }
+
+/* Shop: a new recipe card flips over with a burst of sparkles. */
+@keyframes flip { from { transform: rotateY(180deg) scale(.8); } to { transform: rotateY(360deg) scale(1); } }
+@keyframes burst { 0% { transform: scale(.2); opacity: 0; } 40% { opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+.s-card { position: relative; }
+.s-card.flip { animation: flip .6s ease-out; }
+.s-burst { position: absolute; left: 50%; top: 40px; width: 150px; height: 150px; margin-left: -75px; pointer-events: none; opacity: 0; animation: burst .9s ease-out .35s; }
+
+/* Some people (and some iPads' settings) ask for less movement: switch the decoration off. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
